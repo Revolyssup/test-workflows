@@ -1,13 +1,30 @@
-name: test
+name: ci
 
-on: push
+on:
+  push:
+    branches:
+      - 'master'
 
 jobs:
-  job1:
-    name: job1test
+  docker:
     runs-on: ubuntu-latest
     steps:
-      - name: step1
-        run: |
-          echo This is a test bruh
-        shell: bash
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.REVOLY_DOCKER_USERNAME }}
+          password: ${{ secrets.REVOLY_DOCKER_PASSWORD }}
+      -
+        name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: revoly/wtf:latest
