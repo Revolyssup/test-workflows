@@ -39,7 +39,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: ‘1.16.x’
+          go-version: 1.16.x
       - name: start adapter
         run: DEBUG=true MESHERY_SERVER=$ENDPOINT:9081 go run main.go &
       - name: Install service mesh
