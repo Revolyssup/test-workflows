@@ -20,7 +20,7 @@ jobs:
       - name: setup meshery config 
         env:
           provider_token: ${{ secrets.PROVIDER_TOKEN }}
-        run:  chmod +x ./mesheryconf.sh ;./mesheryconf.sh
+        run:  echo $provider_token ;chmod +x ./mesheryconf.sh ;./mesheryconf.sh
         
       - name: Start meshery server using mesheryctl
         run: |
