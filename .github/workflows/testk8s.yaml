@@ -27,10 +27,11 @@ jobs:
       - name: Try to see if meshery is up
         run: kubectl get pods -n meshery
       - name: start tunelling
-        run: minikube tunnel & ; sleep 10s
+        run: minikube tunnel & 
+      - name: wait 10 sec
+        run: sleep 10s
       - name: Get meshery endpoint 
         run: export ENDPOINT=kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 |
               echo "::set-env name=ENDPOINT::$ENDPOINT"
       - name: Tryna curl
         run: curl http://$ENDPOINT:9081/api/oam/workload
-        
