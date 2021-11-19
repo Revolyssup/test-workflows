@@ -8,6 +8,8 @@ on:
   workflow_dispatch:
 jobs:
   test:
+    env:
+      ENDPOINT: ""
     runs-on: ubuntu-latest
     steps:
       - name: setting up minikube
@@ -31,7 +33,14 @@ jobs:
       - name: wait 10 sec
         run: sleep 10s
       - name: Get meshery endpoint 
-        run: export ENDPOINT=kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 |
-              echo "::set-env name=ENDPOINT::$ENDPOINT"
+        run: export ENDPOINT=kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 
+      - name: echo endpoint
+        run: echo $ENDPOINT
       - name: Tryna curl
         run: curl http://$ENDPOINT:9081/api/oam/workload
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ‘1.16.0’
+      - name: start adapter
+        run: DEBUG=true MESHERY_SERVER=$ENDPOINT:9081 go run main.go
