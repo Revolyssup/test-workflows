@@ -4,3 +4,5 @@
 	echo $config | yq e '."contexts"."local"."adapters"[0]="'$1'"' -P - > ~/.meshery/config.yaml
 
 	cat ~/.meshery/config.yaml
+    echo '{ "meshery-provider": "Meshery", "token": null }' | jq -c '.token = "'$provider_token'"' > ~/auth.json
+    cat ~/auth.json
