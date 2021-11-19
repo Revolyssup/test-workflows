@@ -1,10 +1,6 @@
 name: ci
 
-on:
-  push:
-    branches:
-      - 'master'
-
+on: push
 jobs:
   docker:
     runs-on: ubuntu-latest
