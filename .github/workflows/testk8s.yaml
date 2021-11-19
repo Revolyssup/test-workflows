@@ -33,9 +33,9 @@ jobs:
       - name: wait 10 sec
         run: sleep 10s
       - name: Get meshery endpoint 
-        run: export ENDPOINT=kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 
+        run: ENDPOINT=kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 
       - name: echo endpoint
-        run: echo $ENDPOINT
+        run: echo "$ENDPOINT"
       - name: Tryna curl
         run: curl http://$ENDPOINT:9081/api/oam/workload
       - name: Setup Go
