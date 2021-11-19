@@ -34,8 +34,8 @@ jobs:
         run: sleep 10s
       - name: Get meshery endpoint 
         run:  echo "ENDPOINT=$(kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 )" >> $GITHUB_ENV
-      - name: echo endpoint
-        run: echo "$ENDPOINT"
+      - name: Update endpoint in config
+        run: chmod +x ./configchange.sh; ./configchange.sh
       - name: Tryna curl
         run: curl http://$ENDPOINT:9081/api/oam/workload
       - name: Setup Go
