@@ -15,6 +15,11 @@ jobs:
         with:
           minikube version: 'v1.16.0'
           kubernetes version: 'v1.19.2'
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: setup meshery config 
+        run:  chmod +x ./mesheryconf.sh ;./mesheryconf.sh
+        
       - name: Start meshery server using mesheryctl
         run: |
            curl -L https://git.io/meshery | PLATFORM=kubernetes bash -
