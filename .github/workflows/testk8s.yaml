@@ -8,8 +8,6 @@ on:
   workflow_dispatch:
 jobs:
   test:
-    env:
-      ENDPOINT: ""
     runs-on: ubuntu-latest
     steps:
       - name: setting up minikube
@@ -33,7 +31,7 @@ jobs:
       - name: wait 10 sec
         run: sleep 10s
       - name: Get meshery endpoint 
-        run: ENDPOINT=kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 
+        run:  echo "ENDPOINT=$(kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 )" >> $GITHUB_ENV
       - name: echo endpoint
         run: echo "$ENDPOINT"
       - name: Tryna curl
