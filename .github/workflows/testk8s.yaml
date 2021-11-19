@@ -16,7 +16,6 @@ jobs:
           minikube version: 'v1.16.0'
           kubernetes version: 'v1.19.2'
       - name: Start meshery server using mesheryctl
-        uses: ubuntu-latest
         run: |
            curl -L https://git.io/meshery | PLATFORM=kubernetes bash -
            sleep 100s
