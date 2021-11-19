@@ -7,7 +7,7 @@ on:
       - master
   workflow_dispatch:
 jobs:
-  setupk8s:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: setting up minikube
@@ -26,3 +26,11 @@ jobs:
            sleep 100s
       - name: Try to see if meshery is up
         run: kubectl get pods -n meshery
+      - name: start tunelling
+        run: minikube tunnel
+      - name: Get meshery endpoint 
+        run: export ENDPOINT=kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 |
+              echo "::set-env name=ENDPOINT::$ENDPOINT"
+      - name: Tryna curl
+        run: curl http://$ENDPOINT:9081/api/oam/workload
+        
