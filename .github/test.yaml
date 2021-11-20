@@ -1,0 +1,9 @@
+name: IstioSM
+version: 1.0.1
+services:
+  linkerd:
+    type: IstioMesh
+    namespace: istio-system
+    settings:
+      version: stable-1.12.0
+

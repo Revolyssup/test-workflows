@@ -39,6 +39,14 @@ jobs:
         run: sleep 10s
       - name: check if pods started
         run: kubectl get pods -n meshery
+      - name: pattern apply
+        run: mesheryctl pattern apply -f ./.github/test.yaml -t ~/auth.json   
+      - name: wait 60 sec
+        run: sleep 60s
+      - name: check logs
+        run: |
+            podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
+            kubectl logs pod/$podname -n meshery
       # - name: Get meshery endpoint 
       #   run:  echo "ENDPOINT=$(kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 )" >> $GITHUB_ENV
       # - name: Update endpoint in config
