@@ -28,28 +28,35 @@ jobs:
            sleep 100s
       - name: Try to see if meshery is up
         run: kubectl get pods -n meshery
-      - name: start tunelling
-        run: minikube tunnel & 
+      - name: start adapter
+        run: |
+          kubectl apply -f ./.github/meshery-istio-deployment.yaml --namespace=meshery
+          kubectl apply -f ./.github/meshery-istio-service.yaml --namespace=meshery
+          kubectl apply -f ./.github/meshery-service.yaml --namespace=meshery
+      # - name: start tunelling
+      #   run: minikube tunnel & 
       - name: wait 10 sec
         run: sleep 10s
-      - name: Get meshery endpoint 
-        run:  echo "ENDPOINT=$(kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 )" >> $GITHUB_ENV
-      - name: Update endpoint in config
-        run: chmod +x ./configchange.sh; ./configchange.sh
-      - name: Tryna curl
-        run: curl http://$ENDPOINT:9081/api/oam/workload
-      - name: Setup Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.16.x
-      - name: start adapter
-        run: DEBUG=true MESHERY_SERVER=$ENDPOINT:9081 go run main.go &
+      - name: check if pods started
+        run: kubectl get pods -n meshery
+      # - name: Get meshery endpoint 
+      #   run:  echo "ENDPOINT=$(kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 )" >> $GITHUB_ENV
+      # - name: Update endpoint in config
+      #   run: chmod +x ./configchange.sh; ./configchange.sh
+      # - name: Tryna curl
+      #   run: curl http://$ENDPOINT:9081/api/oam/workload
+      # - name: Setup Go
+      #   uses: actions/setup-go@v2
+      #   with:
+      #     go-version: 1.16.x
+      # - name: start adapter
+      #   run: DEBUG=true MESHERY_SERVER=$ENDPOINT:9081 go run main.go &
       # - name: Install service mesh
       #   run: mesheryctl mesh deploy --adapter meshery-istio --namespace istio-system
       # - name: sleep
       #   run: 100s
       # - name: Check
       #   run: kubectl get pods -n istio-system
-      - name: get the routes
-        run: ip route
+      # - name: get the routes
+      #   run: ip route
 
