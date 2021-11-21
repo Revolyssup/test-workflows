@@ -65,6 +65,8 @@ jobs:
           config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
           echo $config  > ~/.meshery/config.yaml
           cat  ~/.meshery/config.yaml
+      - name: check status
+        run: mesheryctl system status
       - name: pattern apply
         run: mesheryctl pattern apply -f ./.github/test.yaml -t ~/auth.json   
       - name: wait 120 sec
