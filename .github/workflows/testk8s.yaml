@@ -42,6 +42,7 @@ jobs:
       - name: reset meshery addr
         run: |
           svcip=$(kubectl get svc -n meshery | grep "meshery " | tr -s ' ' | cut -d " " -f 3)
+          echo "this is $svcip"
           config='{"contexts":{"local":{"endpoint":"http://$svcip:9081","token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
           echo $config  > ~/.meshery/config.yaml
           cat  ~/.meshery/config.yaml
