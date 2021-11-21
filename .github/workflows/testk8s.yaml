@@ -39,6 +39,7 @@ jobs:
       #   run: kubectl get pods -n meshery
       - name: start adapter
         run: |
+          kubectl create ns meshery
           kubectl apply -f ./.github/meshery-istio-deployment.yaml --namespace=meshery
           kubectl apply -f ./.github/meshery-istio-service.yaml --namespace=meshery
           kubectl apply -f ./.github/service-account.yaml --namespace=meshery
