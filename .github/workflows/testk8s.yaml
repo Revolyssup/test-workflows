@@ -10,65 +10,65 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: setting up minikube
-        uses: manusa/actions-setup-minikube@v2.4.2
-        with:
-          minikube version: 'v1.16.0'
-          kubernetes version: 'v1.19.2'
+      # - name: setting up minikube
+      #   uses: manusa/actions-setup-minikube@v2.4.2
+      #   with:
+      #     minikube version: 'v1.16.0'
+      #     kubernetes version: 'v1.19.2'
       - name: Checkout Code
         uses: actions/checkout@v2
-      - name: Login to DockerHub Registry
-        run: echo ${{ secrets.REVOLY_DOCKER_PASSWORD }} | docker login -u ${{ secrets.REVOLY_DOCKER_USERNAME }} --password-stdin
+      # - name: Login to DockerHub Registry
+      #   run: echo ${{ secrets.REVOLY_DOCKER_PASSWORD }} | docker login -u ${{ secrets.REVOLY_DOCKER_USERNAME }} --password-stdin
       # - name: Get the version
       #   id: vars
       #   run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
-      - name: Build the tagged Docker image
-        run: docker build . --file Dockerfile --tag testistio:latest
-      - name: setup meshery config 
-        env:
-          provider_token: ${{ secrets.PROVIDER_TOKEN }}
-        run:  echo $provider_token ;chmod +x ./mesheryconf.sh ;./mesheryconf.sh
+      # - name: Build the tagged Docker image
+      #   run: docker build . --file Dockerfile --tag testistio:latest
+      # - name: setup meshery config 
+      #   env:
+      #     provider_token: ${{ secrets.PROVIDER_TOKEN }}
+      #   run:  echo $provider_token ;chmod +x ./mesheryconf.sh ;./mesheryconf.sh
         
-      - name: Start meshery server using mesheryctl
-        run: |
-           curl -L https://git.io/meshery | PLATFORM=kubernetes bash -
-           sleep 100s
-      - name: Try to see if meshery is up
-        run: kubectl get pods -n meshery
+      # - name: Start meshery server using mesheryctl
+      #   run: |
+      #      curl -L https://git.io/meshery | PLATFORM=kubernetes bash -
+      #      sleep 100s
+      # - name: Try to see if meshery is up
+      #   run: kubectl get pods -n meshery
       - name: changing image
         run: |
-          cat ./.github/meshery-istio-deployment.yaml | yq e '."spec"."template"."spec"."containers"[0].image="testistio:latest"' -P - > ./.github/meshery-istio-deployment.yaml
+          cat ./.github/meshery-istio-deployment.yaml | yq e '."spec"."template"."spec"."containers"[0].image="testistio:latest"'  > ./.github/meshery-istio-deployment.yaml
           cat ./.github/meshery-istio-deployment.yaml
-      - name: start adapter
-        run: |
-          kubectl apply -f ./.github/meshery-istio-deployment.yaml --namespace=meshery
-          kubectl apply -f ./.github/meshery-istio-service.yaml --namespace=meshery
-          kubectl apply -f ./.github/service-account.yaml --namespace=meshery
-      - name: start tunelling
-        run: minikube tunnel & 
-      - name: wait 30 sec
-        run: sleep 30s
-      - name: check if pods started
-        run: |
-          podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
-          kubectl logs pod/$podName -n meshery
-      - name: reset meshery addr
-        run: |
-          kubectl get svc -n meshery 
-          svcip="http://$(kubectl get svc -n meshery | grep "meshery " | tr -s ' ' | cut -d " " -f 3):9081"
-          echo "this is $svcip"
-          config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
-          echo $config  > ~/.meshery/config.yaml
-          cat  ~/.meshery/config.yaml
-          curl $svcip
-      - name: pattern apply
-        run: mesheryctl pattern apply -f ./.github/test.yaml -t ~/auth.json   
-      - name: wait 120 sec
-        run: sleep 120s
-      - name: check adapter logs
-        run: |
-            podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
-            kubectl logs pod/$podname -n meshery
+      # - name: start adapter
+      #   run: |
+      #     kubectl apply -f ./.github/meshery-istio-deployment.yaml --namespace=meshery
+      #     kubectl apply -f ./.github/meshery-istio-service.yaml --namespace=meshery
+      #     kubectl apply -f ./.github/service-account.yaml --namespace=meshery
+      # - name: start tunelling
+      #   run: minikube tunnel & 
+      # - name: wait 30 sec
+      #   run: sleep 30s
+      # - name: check if pods started
+      #   run: |
+      #     podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
+      #     kubectl logs pod/$podName -n meshery
+      # - name: reset meshery addr
+      #   run: |
+      #     kubectl get svc -n meshery 
+      #     svcip="http://$(kubectl get svc -n meshery | grep "meshery " | tr -s ' ' | cut -d " " -f 3):9081"
+      #     echo "this is $svcip"
+      #     config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
+      #     echo $config  > ~/.meshery/config.yaml
+      #     cat  ~/.meshery/config.yaml
+      #     curl $svcip
+      # - name: pattern apply
+      #   run: mesheryctl pattern apply -f ./.github/test.yaml -t ~/auth.json   
+      # - name: wait 120 sec
+      #   run: sleep 120s
+      # - name: check adapter logs
+      #   run: |
+      #       podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
+      #       kubectl logs pod/$podname -n meshery
       # - name: check logs
       #   run: |
       #       podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
