@@ -41,7 +41,8 @@ jobs:
         run: kubectl get pods -n meshery
       - name: reset meshery addr
         run: |
-          config='{"contexts":{"local":{"endpoint":"http://meshery:9081","token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
+          svcip=$(kubectl get svc -n meshery | grep "meshery " | tr -s ' ' | cut -d " " -f 3)
+          config='{"contexts":{"local":{"endpoint":"http://$svcip:9081","token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
           echo $config  > ~/.meshery/config.yaml
           cat  ~/.meshery/config.yaml
       - name: pattern apply
