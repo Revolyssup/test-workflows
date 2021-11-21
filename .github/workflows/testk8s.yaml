@@ -15,6 +15,7 @@ jobs:
         with:
           minikube version: 'v1.16.0'
           kubernetes version: 'v1.19.2'
+          driver: docker
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: Login to DockerHub Registry
