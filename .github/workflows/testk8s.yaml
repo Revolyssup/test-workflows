@@ -67,10 +67,10 @@ jobs:
       #   run: mesheryctl pattern apply -f ./.github/test.yaml -t ~/auth.json   
       # - name: wait 120 sec
       #   run: sleep 120s
-      # - name: check adapter logs
-      #   run: |
-      #       podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
-      #       kubectl logs pod/$podname -n meshery
+      - name: check adapter logs
+        run: |
+            podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
+            kubectl logs pod/$podname -n meshery
       # - name: check logs
       #   run: |
       #       podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
