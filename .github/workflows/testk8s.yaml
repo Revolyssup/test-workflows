@@ -38,7 +38,9 @@ jobs:
       - name: changing image
         run: |
          cat ./.github/meshery-istio-deployment.yaml
-         yq e '."spec"."template"."spec"."containers"[0].image="testistio:latest"' ./.github/meshery-istio-deployment.yaml 
+         yq w -i ./.github/meshery-istio-deployment.yaml spec.template.spec.containers[0].image this one
+         cat ./.github/meshery-istio-deployment.yaml
+
       # - name: start adapter
       #   run: |
       #     kubectl apply -f ./.github/meshery-istio-deployment.yaml --namespace=meshery
