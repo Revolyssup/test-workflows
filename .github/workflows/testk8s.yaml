@@ -26,30 +26,30 @@ jobs:
         run: docker build . --file Dockerfile --tag testistio:latest
       - name: check images
         run: docker images
-      - name: setup meshery config 
-        env:
-          provider_token: ${{ secrets.PROVIDER_TOKEN }}
-        run:  echo $provider_token ;chmod +x ./mesheryconf.sh ;./mesheryconf.sh
+      # - name: setup meshery config 
+      #   env:
+      #     provider_token: ${{ secrets.PROVIDER_TOKEN }}
+      #   run:  echo $provider_token ;chmod +x ./mesheryconf.sh ;./mesheryconf.sh
         
-      - name: Start meshery server using mesheryctl
-        run: |
-           curl -L https://git.io/meshery | PLATFORM=kubernetes bash -
-           sleep 100s
-      - name: Try to see if meshery is up
-        run: kubectl get pods -n meshery
+      # - name: Start meshery server using mesheryctl
+      #   run: |
+      #      curl -L https://git.io/meshery | PLATFORM=kubernetes bash -
+      #      sleep 100s
+      # - name: Try to see if meshery is up
+      #   run: kubectl get pods -n meshery
       - name: start adapter
         run: |
           kubectl apply -f ./.github/meshery-istio-deployment.yaml --namespace=meshery
           kubectl apply -f ./.github/meshery-istio-service.yaml --namespace=meshery
           kubectl apply -f ./.github/service-account.yaml --namespace=meshery
-      - name: start tunelling
-        run: minikube tunnel & 
-      - name: wait 30 sec
-        run: sleep 30s
-      - name: check if pods started
-        run: |
-          podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
-          kubectl logs pod/$podName -n meshery
+      # - name: start tunelling
+      #   run: minikube tunnel & 
+      - name: wait 60 sec
+        run: sleep 60s
+      # - name: check if pods started
+      #   run: |
+      #     podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
+      #     kubectl logs pod/$podName -n meshery
 
 
 
@@ -72,7 +72,7 @@ jobs:
       - name: check adapter logs
         run: |
             podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
-            kubectl logs pod/$podname -n meshery
+            kubectl describe  pod $podname -n meshery
       # - name: check logs
       #   run: |
       #       podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
