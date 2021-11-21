@@ -37,6 +37,7 @@ jobs:
       #   run: kubectl get pods -n meshery
       - name: changing image
         run: |
+         cat ./.github/meshery-istio-deployment.yaml
          yq eval '."spec"."template"."spec"."containers"[0].image="testistio:latest"' ./.github/meshery-istio-deployment.yaml > ./.github/meshery-istio-deployment.yaml
          cat ./.github/meshery-istio-deployment.yaml
       # - name: start adapter
