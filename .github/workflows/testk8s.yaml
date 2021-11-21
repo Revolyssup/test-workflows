@@ -24,6 +24,8 @@ jobs:
         run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
       - name: Build the tagged Docker image
         run: docker build . --file Dockerfile --tag testistio:latest
+      - name: check images
+        run: docker images
       - name: setup meshery config 
         env:
           provider_token: ${{ secrets.PROVIDER_TOKEN }}
