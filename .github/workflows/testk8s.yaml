@@ -16,17 +16,17 @@ jobs:
           minikube version: 'v1.16.0'
           kubernetes version: 'v1.19.2'
           driver: docker
-      # - name: setenv
-      #   run: minikube docker-env
+      - name: setenv
+        run: minikube docker-env
       - name: Checkout Code
         uses: actions/checkout@v2
-      - name: Login to DockerHub Registry
-        run: echo ${{ secrets.REVOLY_DOCKER_PASSWORD }} | docker login -u ${{ secrets.REVOLY_DOCKER_USERNAME }} --password-stdin
+      # - name: Login to DockerHub Registry
+      #   run: echo ${{ secrets.REVOLY_DOCKER_PASSWORD }} | docker login -u ${{ secrets.REVOLY_DOCKER_USERNAME }} --password-stdin
       # - name: Get the version
       #   id: vars
       #   run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
-      # - name: Build the tagged Docker image
-      #   run: docker build . --file Dockerfile --tag revoly/testistio:test
+      - name: Build the tagged Docker image
+        run: docker build . --file Dockerfile --tag revoly/testistio:test
       # - name: push to local
       #   run: docker push revoly/testistio:test
       
@@ -56,26 +56,28 @@ jobs:
           kubectl logs pod/$podName -n meshery
 
 
+      - name: check if external IP is allotted
+        run: svcstatus=$(kubectl get svc  -n meshery| grep meshery | tr -s ' ' | cut -d " " -f 4);
+              if [ "$svcstatus" = "<pending>" ];then
+                return 1
+              fi
 
-
-
-
-      # - name: reset meshery addr
-      #   run: |
-      #     kubectl get svc -n meshery 
-      #     svcip="http://$(kubectl get svc -n meshery | grep "meshery " | tr -s ' ' | cut -d " " -f 3):9081"
-      #     echo "this is $svcip"
-      #     config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
-      #     echo $config  > ~/.meshery/config.yaml
-      #     cat  ~/.meshery/config.yaml
-      - name: port forward
-        run: kubectl port-forward service/meshery 9081:9081 -n meshery& > /dev/null
+      - name: reset meshery addr
+        run: |
+          kubectl get svc -n meshery 
+          svcip="http://$(kubectl get svc -n meshery | grep "meshery " | tr -s ' ' | cut -d " " -f 3):9081"
+          echo "this is $svcip"
+          config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
+          echo $config  > ~/.meshery/config.yaml
+      # #     cat  ~/.meshery/config.yaml
+      # - name: port forward
+      #   run: kubectl port-forward service/meshery 9081:9081 -n meshery& > /dev/null
       - name: check status
         run: mesheryctl system status
-      - name: change config
-        run: |
-         config='{"contexts":{"local":{"endpoint":"http://localhost:9081","token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
-         echo $config > ~/.meshery/config.yaml
+      # - name: change config
+      #   run: |
+      #    config='{"contexts":{"local":{"endpoint":"http://localhost:9081","token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
+      #    echo $config > ~/.meshery/config.yaml
       - name: pattern list 
         run: mesheryctl pattern list
       - name: pattern apply
