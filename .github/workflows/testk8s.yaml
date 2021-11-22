@@ -16,8 +16,8 @@ jobs:
           minikube version: 'v1.23.2'
           kubernetes version: 'v1.20.7'
           driver: docker
-      # - name: setenv
-      #   run: minikube docker-env
+      - name: setenv
+        run: minikube docker-env
       - name: Checkout Code
         uses: actions/checkout@v2
       # - name: Login to DockerHub Registry
@@ -25,8 +25,8 @@ jobs:
       # - name: Get the version
       #   id: vars
       #   run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
-      # - name: Build the tagged Docker image
-      #   run: docker build . --file Dockerfile --tag testistio:test
+      - name: Build the tagged Docker image
+        run: docker build . --file Dockerfile --tag testistio:test
       # - name: push to local
       #   run: docker push revoly/testistio:test
       
