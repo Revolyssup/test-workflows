@@ -16,6 +16,9 @@ jobs:
           minikube version: 'v1.16.0'
           kubernetes version: 'v1.19.2'
           driver: docker
+      # - name: setenv
+      #   run: minikube docker-env
+      - name: setup metallb
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: Login to DockerHub Registry
@@ -57,20 +60,22 @@ jobs:
 
 
 
-      - name: reset meshery addr
-        run: |
-          kubectl get svc -n meshery 
-          svcip="http://$(kubectl get svc -n meshery | grep "meshery " | tr -s ' ' | cut -d " " -f 3):9081"
-          echo "this is $svcip"
-          config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
-          echo $config  > ~/.meshery/config.yaml
-          cat  ~/.meshery/config.yaml
+      # - name: reset meshery addr
+      #   run: |
+      #     kubectl get svc -n meshery 
+      #     svcip="http://$(kubectl get svc -n meshery | grep "meshery " | tr -s ' ' | cut -d " " -f 3):9081"
+      #     echo "this is $svcip"
+      #     config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
+      #     echo $config  > ~/.meshery/config.yaml
+      #     cat  ~/.meshery/config.yaml
+      - name: port forward
+        run: kubectl port-forward service/meshery 9081:9081 -n meshery& > /dev/null
       - name: check status
         run: mesheryctl system status
       - name: pattern list
         run: mesheryctl pattern list
       - name: pattern apply
-        run: mesheryctl pattern apply -f ./.github/test.yaml -t ~/auth.json   
+        run: mesheryctl pattern apply -f ./.github/test.yaml 
       - name: check adapter logs
         run: |
             podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
