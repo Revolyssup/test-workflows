@@ -75,9 +75,9 @@ jobs:
         run: |
             podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
             kubectl describe  pod $podname -n meshery
-      - name: check logs
+      - name: check meshery logs
         run: |
-            podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
+            podname=$(kubectl get pods -n meshery | grep "meshery " | tr -s ' ' | cut -d " " -f 1)
             kubectl logs pod/$podname -n meshery
       - name: Get meshery endpoint 
         run:  echo "ENDPOINT=$(kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 )" >> $GITHUB_ENV
