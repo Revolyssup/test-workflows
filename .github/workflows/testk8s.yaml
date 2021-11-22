@@ -47,8 +47,8 @@ jobs:
           kubectl apply -f ./.github/service-account.yaml --namespace=meshery
       - name: start tunelling
         run: minikube tunnel &> /dev/null &
-      - name: wait 30 sec
-        run: sleep 30s
+      - name: wait 20 sec
+        run: sleep 20s
       - name: check if pods started
         run: |
           podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
