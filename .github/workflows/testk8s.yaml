@@ -16,8 +16,8 @@ jobs:
           minikube version: 'v1.16.0'
           kubernetes version: 'v1.19.2'
           driver: docker
-      - name: setenv
-        run: minikube docker-env
+      # - name: setenv
+      #   run: minikube docker-env
       - name: Checkout Code
         uses: actions/checkout@v2
       # - name: Login to DockerHub Registry
@@ -25,8 +25,8 @@ jobs:
       # - name: Get the version
       #   id: vars
       #   run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
-      - name: Build the tagged Docker image
-        run: docker build . --file Dockerfile --tag testistio:test
+      # - name: Build the tagged Docker image
+      #   run: docker build . --file Dockerfile --tag testistio:test
       # - name: push to local
       #   run: docker push revoly/testistio:test
       
@@ -38,7 +38,7 @@ jobs:
       - name: Start meshery server using mesheryctl
         run: |
            curl -L https://git.io/meshery | PLATFORM=kubernetes bash -
-           sleep 100s
+           sleep 20s
       - name: Try to see if meshery is up
         run: kubectl get pods -n meshery
       - name: start adapter
@@ -48,8 +48,8 @@ jobs:
           kubectl apply -f ./.github/service-account.yaml --namespace=meshery
       - name: start tunelling
         run: minikube tunnel &> /dev/null &
-      - name: wait 20 sec
-        run: sleep 20s
+      - name: wait 10 sec
+        run: sleep 10s
       - name: check if pods started
         run: |
           podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
@@ -59,6 +59,7 @@ jobs:
       - name: check if external IP is allotted
         run: |
               svcstatus=$(kubectl get svc  -n meshery| grep meshery | tr -s ' ' | cut -d " " -f 4)
+              echo $svcstatus
               if [ "$svcstatus" = "<pending>" ];then
                  exit 1
               fi
@@ -70,7 +71,6 @@ jobs:
           echo "this is $svcip"
           config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
           echo $config  > ~/.meshery/config.yaml
-          curl $svcip
       # #     cat  ~/.meshery/config.yaml
       # - name: port forward
       #   run: kubectl port-forward service/meshery 9081:9081 -n meshery& > /dev/null
