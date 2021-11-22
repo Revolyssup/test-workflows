@@ -44,7 +44,7 @@ jobs:
           kubectl apply -f ./.github/meshery-istio-service.yaml --namespace=meshery
           kubectl apply -f ./.github/service-account.yaml --namespace=meshery
       - name: start tunelling
-        run: minikube tunnel 
+        run: minikube tunnel &> /dev/null &
       - name: wait 30 sec
         run: sleep 30s
       - name: check if pods started
