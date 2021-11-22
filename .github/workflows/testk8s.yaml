@@ -60,7 +60,7 @@ jobs:
         run: |
               svcstatus=$(kubectl get svc  -n meshery| grep meshery | tr -s ' ' | cut -d " " -f 4)
               if [ "$svcstatus" = "<pending>" ];then
-                return 1
+                 exit 1
               fi
 
       - name: reset meshery addr
