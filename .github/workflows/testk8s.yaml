@@ -45,8 +45,8 @@ jobs:
           kubectl apply -f ./.github/service-account.yaml --namespace=meshery
       - name: start tunelling
         run: minikube tunnel & 
-      - name: wait 60 sec
-        run: sleep 60s
+      - name: wait 30 sec
+        run: sleep 30s
       - name: check if pods started
         run: |
           podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
@@ -67,24 +67,19 @@ jobs:
           cat  ~/.meshery/config.yaml
       - name: check status
         run: mesheryctl system status
+      - name: pattern list
+        run: mesheryctl pattern list
       - name: pattern apply
         run: mesheryctl pattern apply -f ./.github/test.yaml -t ~/auth.json   
-      - name: wait 120 sec
-        run: sleep 120s
       - name: check adapter logs
         run: |
             podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
             kubectl describe  pod $podname -n meshery
       - name: check meshery logs
         run: |
-            podname=$(kubectl get pods -n meshery | grep "meshery " | tr -s ' ' | cut -d " " -f 1)
-            kubectl logs pod/$podname -n meshery
-      - name: Get meshery endpoint 
-        run:  echo "ENDPOINT=$(kubectl get svc -n meshery | grep -w "meshery " |  tr -s ' ' | cut -d " " -f 3 )" >> $GITHUB_ENV
-      - name: Update endpoint in config
-        run: chmod +x ./configchange.sh; ./configchange.sh
-      - name: Tryna curl
-        run: curl http://$ENDPOINT:9081/api/oam/workload
+          podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
+          kubectl logs pod/$podName -n meshery
+
       # - name: Setup Go
       #   uses: actions/setup-go@v2
       #   with:

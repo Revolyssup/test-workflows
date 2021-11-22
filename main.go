@@ -50,6 +50,7 @@ func init() {
 
 // main is the entrypoint of the adaptor
 func main() {
+	fmt.Println("THIS IS IS WORKFLOW")
 	// Initialize Logger instance
 	log, err := logger.New(serviceName, logger.Options{
 		Format:     logger.SyslogLogFormat,
