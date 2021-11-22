@@ -64,6 +64,7 @@ jobs:
                  exit 1
               fi
 
+
       - name: reset meshery addr
         run: |
           kubectl get svc -n meshery 
