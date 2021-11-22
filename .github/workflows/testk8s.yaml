@@ -71,7 +71,11 @@ jobs:
         run: kubectl port-forward service/meshery 9081:9081 -n meshery& > /dev/null
       - name: check status
         run: mesheryctl system status
-      - name: pattern list
+      - name: change config
+        run: |
+         config='{"contexts":{"local":{"endpoint":"http://localhost:9081","token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
+         echo $config > ~/.meshery/config.yaml
+      - name: pattern list 
         run: mesheryctl pattern list
       - name: pattern apply
         run: mesheryctl pattern apply -f ./.github/test.yaml 
