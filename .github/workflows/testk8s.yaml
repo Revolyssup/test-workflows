@@ -70,7 +70,7 @@ jobs:
           echo "this is $svcip"
           config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
           echo $config  > ~/.meshery/config.yaml
-          curl http://$svcip
+          curl $svcip
       # #     cat  ~/.meshery/config.yaml
       # - name: port forward
       #   run: kubectl port-forward service/meshery 9081:9081 -n meshery& > /dev/null
