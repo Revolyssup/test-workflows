@@ -18,7 +18,6 @@ jobs:
           driver: docker
       # - name: setenv
       #   run: minikube docker-env
-      - name: setup metallb
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: Login to DockerHub Registry
