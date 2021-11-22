@@ -57,7 +57,8 @@ jobs:
 
 
       - name: check if external IP is allotted
-        run: svcstatus=$(kubectl get svc  -n meshery| grep meshery | tr -s ' ' | cut -d " " -f 4);
+        run: |
+              svcstatus=$(kubectl get svc  -n meshery| grep meshery | tr -s ' ' | cut -d " " -f 4)
               if [ "$svcstatus" = "<pending>" ];then
                 return 1
               fi
