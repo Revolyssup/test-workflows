@@ -22,7 +22,7 @@ spec:
     spec:
       serviceAccount: meshery-server
       containers:
-      - image: revoly/testistio:test
+      - image: testistio:test
         imagePullPolicy: Always
         name: meshery-istio
         ports:

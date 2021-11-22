@@ -26,7 +26,7 @@ jobs:
       #   id: vars
       #   run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
       - name: Build the tagged Docker image
-        run: docker build . --file Dockerfile --tag revoly/testistio:test
+        run: docker build . --file Dockerfile --tag testistio:test
       # - name: push to local
       #   run: docker push revoly/testistio:test
       
