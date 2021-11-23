@@ -22,8 +22,8 @@ spec:
     spec:
       serviceAccount: meshery-server
       containers:
-      - image: revoly/testistio:test
-        imagePullPolicy: IfNotPresent
+      - image: testistio:test
+        imagePullPolicy: Never
         name: meshery-istio
         ports:
         - containerPort: 10000

@@ -17,18 +17,11 @@ jobs:
           kubernetes version: 'v1.20.7'
           driver: docker
       - name: setenv
-        run: eval $(minikube -p minikube docker-env)
+        run: eval $(minikube docker-env)
       - name: Checkout Code
         uses: actions/checkout@v2
-      - name: Login to DockerHub Registry
-        run: echo ${{ secrets.REVOLY_DOCKER_PASSWORD }} | docker login -u ${{ secrets.REVOLY_DOCKER_USERNAME }} --password-stdin
-      # - name: Get the version
-      #   id: vars
-      #   run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
       - name: Build the tagged Docker image
-        run: docker build . --file Dockerfile --tag revoly/testistio:test
-      - name: push to local
-        run: docker push revoly/testistio:test
+        run: docker build . --file Dockerfile --tag testistio:test
       
       - name: setup meshery config 
         env:
