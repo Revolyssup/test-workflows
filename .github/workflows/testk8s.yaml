@@ -18,7 +18,7 @@ jobs:
           driver: docker
       - name: setenv
         run: |
-          echo $(minikube -p minikube docker-env) | bash -
+          touch test.sh;echo $(minikube -p minikube docker-env) > ./test.sh ; chmod +x ./test.sh; ./test.sh
       - name: check a env variable
         run: |
           a=$MINIKUBE_ACTIVE_DOCKERD
