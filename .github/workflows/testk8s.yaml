@@ -19,8 +19,8 @@ jobs:
       - name: setenv
         run: |
            this=$(minikube docker-env)
-           echo $this
-           echo $(minikube docker-env)
+           echo "this shoudl be something $this"
+           eval $(minikube docker-env)
       - name: Checkout Code
         uses: actions/checkout@v2
 
