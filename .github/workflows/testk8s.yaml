@@ -12,7 +12,7 @@ on:
 jobs:
   TestIstio:
     runs-on: ubuntu-latest
-    steps:
+    steps:  
       - name: setting up minikube
         uses: manusa/actions-setup-minikube@v2.4.1
         with:
@@ -41,14 +41,14 @@ jobs:
            sleep 20s
       
       # Start the adapter using yamls
-      - name: start adapter
+      - name: Start adapter
         run: |
-          kubectl apply -f ./.github/meshery-istio-deployment.yaml --namespace=meshery
-          kubectl apply -f ./.github/meshery-istio-service.yaml --namespace=meshery
-          kubectl apply -f ./.github/service-account.yaml --namespace=meshery
+          kubectl apply -f ./.github/install/meshery-istio-deployment.yaml --namespace=meshery
+          kubectl apply -f ./.github/install/meshery-istio-service.yaml --namespace=meshery
+          kubectl apply -f ./.github/install/service-account.yaml --namespace=meshery
       
       # Start tunnelling to allocate external IP to LoadBalancer type service(meshery)(SO that we can access meshery from outside)
-      - name: start tunelling
+      - name: Start tunelling
         run: minikube tunnel &> /dev/null &
       - name: wait 10 sec
         run: sleep 10s
@@ -77,8 +77,8 @@ jobs:
           config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
           echo $config  > ~/.meshery/config.yaml
 
-      # This pattern will try to install istio service mesh
-      - name: pattern apply
+      # This pattern will try to install istio service mesh(Expects three pods to start in istio-system namespace-egress gateway, ingress gateway and istiod)
+      - name: Pattern apply (Install service mesh)
         run: mesheryctl pattern apply -f ./.github/deploy_istio.yaml 
 
 
