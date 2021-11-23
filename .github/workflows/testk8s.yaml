@@ -1,9 +1,14 @@
-name: Meshery Istio
+name: Test Istio Adapter
 
-on: 
-  push: 
-     branches: 
+on:
+  push:
+    branches:
       - "*"
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - master
 jobs:
   TestIstio:
     runs-on: ubuntu-latest
