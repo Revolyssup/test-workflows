@@ -17,7 +17,10 @@ jobs:
           kubernetes version: 'v1.20.7'
           driver: docker
       - name: setenv
-        run: eval $(minikube docker-env)
+        run: |
+           this=$(minikube docker-env)
+           echo $this
+           echo $(minikube docker-env)
       - name: Checkout Code
         uses: actions/checkout@v2
 
