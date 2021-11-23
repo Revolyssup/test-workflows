@@ -183,6 +183,7 @@ func downloadTar(releaseName, release string) (*http.Response, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
+		fmt.Println("BRO HERE IS THE ERROR ", err.Error())
 		return nil, ErrDownloadingTar(err)
 	}
 
@@ -190,6 +191,7 @@ func downloadTar(releaseName, release string) (*http.Response, error) {
 		_ = resp.Body.Close()
 		return nil, ErrDownloadingTar(err)
 	}
+	fmt.Println("FIne")
 
 	return resp, nil
 }

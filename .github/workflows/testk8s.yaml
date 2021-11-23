@@ -93,7 +93,10 @@ jobs:
         run: |
           podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
           kubectl logs pod/$podName -n meshery
-
+      - name: Sleep for 60 sec
+        run: sleep 60s
+      - name: Check what are the pods in that ns
+        run: kubectl get pod -n istio-system
       # - name: Setup Go
       #   uses: actions/setup-go@v2
       #   with:
