@@ -79,7 +79,7 @@ jobs:
 
       # This pattern will try to install istio service mesh(Expects three pods to start in istio-system namespace-egress gateway, ingress gateway and istiod)
       - name: Pattern apply (Install service mesh)
-        run: mesheryctl pattern apply -f ./.github/deploy_istio.yaml 
+        run: mesheryctl pattern apply -f ./.github/install/deploy_istio.yaml 
 
 
       - name: Sleep for 60 sec
