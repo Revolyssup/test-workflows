@@ -88,7 +88,7 @@ jobs:
       - name: check adapter logs
         run: |
             podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
-            kubectl logs pod/$podName -n meshery
+            kubectl logs pod/$podname -n meshery
       - name: check meshery logs
         run: |
           podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
