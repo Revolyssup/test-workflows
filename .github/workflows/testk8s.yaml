@@ -25,8 +25,8 @@ jobs:
         run: docker build  -t testistio:test .
       - name: docker images
         run: docker images
-      - name: check a variable
-        run: echo s$MINIKUBE_ACTIVE_DOCKERD
+      - name: check a env variable
+        run: echo $MINIKUBE_ACTIVE_DOCKERD
       - name: setup meshery config 
         env:
           provider_token: ${{ secrets.PROVIDER_TOKEN }}
