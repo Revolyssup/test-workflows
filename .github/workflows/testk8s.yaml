@@ -16,21 +16,13 @@ jobs:
           minikube version: 'v1.23.2'
           kubernetes version: 'v1.20.7'
           driver: docker
-      - name: setenv
-        run: |
-          touch test.sh;echo $(minikube -p minikube docker-env) > ./test.sh ; chmod +x ./test.sh; ./test.sh
-      - name: check a env variable
-        run: |
-          a=$MINIKUBE_ACTIVE_DOCKERD
-          echo $a
-            if [ "$a" = "" ];then
-                 exit 1
-            fi
       - name: Checkout Code
         uses: actions/checkout@v2
 
       - name: Build the tagged Docker image
-        run: docker build  -t testistio:test .
+        run: |
+          eval $(minikube -p minikube docker-env) 
+          docker build  -t testistio:test .
       - name: docker images
         run: docker images
       - name: check a env variable
