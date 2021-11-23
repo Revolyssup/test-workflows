@@ -25,6 +25,8 @@ jobs:
         run: docker build  -t testistio:test .
       - name: docker images
         run: docker images
+      - name: check a variable
+        run: echo s$MINIKUBE_ACTIVE_DOCKERD
       - name: setup meshery config 
         env:
           provider_token: ${{ secrets.PROVIDER_TOKEN }}
@@ -50,7 +52,8 @@ jobs:
           podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
           kubectl logs pod/$podName -n meshery
 
-
+      - name: docker PS 
+        run: docker ps
       - name: check if external IP is allotted
         run: |
               svcstatus=$(kubectl get svc  -n meshery| grep meshery | tr -s ' ' | cut -d " " -f 4)
