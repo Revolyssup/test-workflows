@@ -18,9 +18,13 @@ jobs:
           driver: docker
       - name: setenv
         run: |
-           this=$(minikube -p minikube docker-env)
-           echo "this shoudl be something $this"
-           eval $(minikube -p minikube docker-env)
+          echo $(minikube -p minikube docker-env) | sh -
+      - name: check a env variable
+        run: |
+          a=$MINIKUBE_ACTIVE_DOCKERD
+              if [ "$a" = "" ];then
+                 exit 1
+              fi
       - name: Checkout Code
         uses: actions/checkout@v2
 
