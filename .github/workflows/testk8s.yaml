@@ -19,10 +19,11 @@ jobs:
       - name: setenv
         run: eval $(minikube docker-env)
       - name: Checkout Code
-        uses: actions/checkout@v
+        uses: actions/checkout@v2
+
       - name: Build the tagged Docker image
         run: docker build  -t testistio:test .
-      - name: Check available images
+      - name: docker images
         run: docker images
       - name: setup meshery config 
         env:
