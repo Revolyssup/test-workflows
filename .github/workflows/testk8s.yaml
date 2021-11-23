@@ -95,8 +95,39 @@ jobs:
           kubectl logs pod/$podName -n meshery
       - name: Sleep for 60 sec
         run: sleep 60s
-      - name: Check what are the pods in that ns
-        run: kubectl get pod -n istio-system
+      - name: Check is egress gateway is running in istio-system namespace
+        run: |
+              podstatus=$(kubectl get pods  -n istio-system| grep istio-egressgateway | tr -s ' ' | cut -d " " -f 3)
+              echo $podstatus
+              if [ "$podstatus" = "Running" ];then
+                echo "Pod started"
+                 exit 0
+              else 
+                 echo "Pod not started"
+                 exit 1
+              fi
+      - name: Check is ingress gateway is running in istio-system namespace
+        run: |
+              podstatus=$(kubectl get pods  -n istio-system| grep istio-ingressgateway | tr -s ' ' | cut -d " " -f 3)
+              echo $podstatus
+              if [ "$podstatus" = "Running" ];then
+                echo "Pod started"
+                 exit 0
+              else 
+                 echo "Pod not started"
+                 exit 1
+              fi
+      - name: Check is control plane is running in istio-system namespace
+        run: |
+              podstatus=$(kubectl get pods  -n istio-system| grep istiod | tr -s ' ' | cut -d " " -f 3)
+              echo $podstatus
+              if [ "$podstatus" = "Running" ];then
+                echo "Pod started"
+                 exit 0
+              else 
+                 echo "Pod not started"
+                 exit 1
+              fi
       # - name: Setup Go
       #   uses: actions/setup-go@v2
       #   with:
