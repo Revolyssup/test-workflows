@@ -1,13 +1,11 @@
-name: testk8s
+name: Meshery Istio
 
 on: 
   push: 
      branches: 
-      - main
-      - master
-  workflow_dispatch:
+      - "*"
 jobs:
-  test:
+  TestIstio:
     runs-on: ubuntu-latest
     steps:
       - name: setting up minikube
@@ -19,42 +17,45 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      # Build the image by setting appropriate environmental variables in order to access the image from minikube
       - name: Build the tagged Docker image
         run: |
           eval $(minikube -p minikube docker-env) 
           docker build  -t testistio:test .
-      - name: docker images
-        run: docker images
-      - name: check a env variable
-        run: echo $MINIKUBE_ACTIVE_DOCKERD
+
+      # Setup meshery config.yaml and auth.json
       - name: setup meshery config 
         env:
           provider_token: ${{ secrets.PROVIDER_TOKEN }}
-        run:  echo $provider_token ;chmod +x ./mesheryconf.sh ;./mesheryconf.sh
+        run:  echo $provider_token ;chmod +x ./.github/scripts/mesheryconf.sh ;./.github/scripts/mesheryconf.sh
         
+      # Start meshery server (Assuming that this step will create the meshery namespace)
       - name: Start meshery server using mesheryctl
         run: |
            curl -L https://git.io/meshery | PLATFORM=kubernetes bash -
            sleep 20s
-      - name: Try to see if meshery is up
-        run: kubectl get pods -n meshery
+      
+      # Start the adapter using yamls
       - name: start adapter
         run: |
           kubectl apply -f ./.github/meshery-istio-deployment.yaml --namespace=meshery
           kubectl apply -f ./.github/meshery-istio-service.yaml --namespace=meshery
           kubectl apply -f ./.github/service-account.yaml --namespace=meshery
+      
+      # Start tunnelling to allocate external IP to LoadBalancer type service(meshery)(SO that we can access meshery from outside)
       - name: start tunelling
         run: minikube tunnel &> /dev/null &
       - name: wait 10 sec
         run: sleep 10s
-      - name: check if pods started
+
+      # Checking meshery server logs
+      - name: Check meshery pod logs
         run: |
           podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
           kubectl logs pod/$podName -n meshery
 
-      - name: docker PS 
-        run: docker ps
-      - name: check if external IP is allotted
+      # If external IP has not been allotted then server is unreachable, exit here in that case
+      - name: Check if meshery has been allotted external IP
         run: |
               svcstatus=$(kubectl get svc  -n meshery| grep meshery | tr -s ' ' | cut -d " " -f 4)
               echo $svcstatus
@@ -62,38 +63,34 @@ jobs:
                  exit 1
               fi
 
-
-      - name: reset meshery addr
+      # Reset meshery's address to the external IP in config.yaml such that mesheryctl can reach it
+      - name: Reset meshery address
         run: |
           kubectl get svc -n meshery 
           svcip="http://$(kubectl get svc -n meshery | grep "meshery " | tr -s ' ' | cut -d " " -f 3):9081"
           echo "this is $svcip"
           config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
           echo $config  > ~/.meshery/config.yaml
-      # #     cat  ~/.meshery/config.yaml
-      # - name: port forward
-      #   run: kubectl port-forward service/meshery 9081:9081 -n meshery& > /dev/null
-      - name: check status
-        run: mesheryctl system status
-      # - name: change config
-      #   run: |
-      #    config='{"contexts":{"local":{"endpoint":"http://localhost:9081","token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
-      #    echo $config > ~/.meshery/config.yaml
-      - name: pattern list 
-        run: mesheryctl pattern list
+
+      # This pattern will try to install istio service mesh
       - name: pattern apply
-        run: mesheryctl pattern apply -f ./.github/test.yaml 
-      - name: check adapter logs
+        run: mesheryctl pattern apply -f ./.github/deploy_istio.yaml 
+
+
+      - name: Sleep for 60 sec
+        run: sleep 60s
+   
+      - name: Check adapter logs
         run: |
             podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
             kubectl logs pod/$podname -n meshery
-      - name: check meshery logs
+      - name: Check meshery logs
         run: |
           podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
           kubectl logs pod/$podName -n meshery
-      - name: Sleep for 60 sec
-        run: sleep 60s
-      - name: Check is egress gateway is running in istio-system namespace
+
+        # Check if all three pods are in a Running state
+      - name: Check if egress gateway is running in istio-system namespace
         run: |
               podstatus=$(kubectl get pods  -n istio-system| grep istio-egressgateway | tr -s ' ' | cut -d " " -f 3)
               echo $podstatus
@@ -104,7 +101,7 @@ jobs:
                  echo "Pod not started"
                  exit 1
               fi
-      - name: Check is ingress gateway is running in istio-system namespace
+      - name: Check if ingress gateway is running in istio-system namespace
         run: |
               podstatus=$(kubectl get pods  -n istio-system| grep istio-ingressgateway | tr -s ' ' | cut -d " " -f 3)
               echo $podstatus
@@ -115,7 +112,7 @@ jobs:
                  echo "Pod not started"
                  exit 1
               fi
-      - name: Check is control plane is running in istio-system namespace
+      - name: Check if control plane is running in istio-system namespace
         run: |
               podstatus=$(kubectl get pods  -n istio-system| grep istiod | tr -s ' ' | cut -d " " -f 3)
               echo $podstatus
@@ -126,18 +123,3 @@ jobs:
                  echo "Pod not started"
                  exit 1
               fi
-      # - name: Setup Go
-      #   uses: actions/setup-go@v2
-      #   with:
-      #     go-version: 1.16.x
-      # - name: start adapter
-      #   run: DEBUG=true MESHERY_SERVER=$ENDPOINT:9081 go run main.go &
-      # - name: Install service mesh
-      #   run: mesheryctl mesh deploy --adapter meshery-istio --namespace istio-system
-      # - name: sleep
-      #   run: 100s
-      # - name: Check
-      #   run: kubectl get pods -n istio-system
-      # - name: get the routes
-      #   run: ip route
-
