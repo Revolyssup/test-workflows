@@ -39,6 +39,8 @@ jobs:
         with:
           name: patternfile
           path: deploy_istio.yaml
+      - name: Check AppendFile 
+        run: cat deploy_istio.yaml
       # Build the image by setting appropriate environmental variables in order to access the image from minikube
       - name: Build the tagged Docker image
         run: |
