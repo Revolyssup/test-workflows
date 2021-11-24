@@ -5,4 +5,4 @@ services:
     type: IstioMesh
     namespace: istio-system
     settings:
-      version: 
+      version: 1.9.1 # will be replaced with the latest version in the workflow

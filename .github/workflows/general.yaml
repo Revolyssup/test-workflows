@@ -96,14 +96,14 @@ jobs:
 
 
       - name: Download patternfile
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v2
         with:
           name: patternfile
-          path: .github/install/deploy_istio.yaml
+          path: deploy_istio.yaml
       # This pattern will try to install  service mesh
       - name: Pattern apply (Install service mesh)
         run: |
-            mesheryctl pattern apply -f ./.github/install/deploy_istio.yaml
+            mesheryctl pattern apply -f deploy_istio.yaml
 
 
       - name: Sleep for 60 sec
