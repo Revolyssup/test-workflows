@@ -1,14 +1,16 @@
-name: Test Istio Adapter
+name: Reusable workflow example
 
 on:
-  push:
-    branches:
-      - "*"
-    tags:
-      - "v*"
-  pull_request:
-    branches:
-      - master
+  workflow_call:
+    inputs:
+      expected_pods:
+        required: true
+        type: string
+      
+    secrets:
+      token:
+        required: true
+
 jobs:
   TestIstio:
     runs-on: ubuntu-latest
@@ -97,6 +99,9 @@ jobs:
         run: |
           podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
           kubectl logs pod/$podName -n meshery
+
+        # Check if all three pods are in a Running state
+
       - name: Check if all expected pods have started
         run: |
           readarray -td, a <<<"istio-egressgateway,istio-ingressgateway,istiod"; declare -p a;
@@ -112,37 +117,3 @@ jobs:
                  exit 1
               fi
             done
-      #   # Check if all three pods are in a Running state
-      # - name: Check if egress gateway is running in istio-system namespace
-      #   run: |
-      #         podstatus=$(kubectl get pods  -n istio-system| grep istio-egressgateway | tr -s ' ' | cut -d " " -f 3)
-      #         echo $podstatus
-      #         if [ "$podstatus" = "Running" ];then
-      #           echo "Pod started"
-      #            exit 0
-      #         else 
-      #            echo "Pod not started"
-      #            exit 1
-      #         fi
-      # - name: Check if ingress gateway is running in istio-system namespace
-      #   run: |
-      #         podstatus=$(kubectl get pods  -n istio-system| grep istio-ingressgateway | tr -s ' ' | cut -d " " -f 3)
-      #         echo $podstatus
-      #         if [ "$podstatus" = "Running" ];then
-      #           echo "Pod started"
-      #            exit 0
-      #         else 
-      #            echo "Pod not started"
-      #            exit 1
-      #         fi
-      # - name: Check if control plane is running in istio-system namespace
-      #   run: |
-      #         podstatus=$(kubectl get pods  -n istio-system| grep istiod | tr -s ' ' | cut -d " " -f 3)
-      #         echo $podstatus
-      #         if [ "$podstatus" = "Running" ];then
-      #           echo "Pod started"
-      #            exit 0
-      #         else 
-      #            echo "Pod not started"
-      #            exit 1
-      #         fi
