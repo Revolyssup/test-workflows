@@ -17,5 +17,5 @@ jobs:
       expected_pods_namespaces: istio-system,istio-system,istio-system
       deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
       service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
-    secrets:
-      token: {{ secrets.PROVIDER_TOKEN }}
+    # secrets:
+    #      token: {{ secrets.PROVIDER_TOKEN }}
