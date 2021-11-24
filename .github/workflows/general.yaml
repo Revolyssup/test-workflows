@@ -18,6 +18,9 @@ on:
       adapter_name:
         required: true
         type: string   
+      patternfile:
+        required: true
+        type: string   
     secrets:
       token:
         required: true
@@ -97,7 +100,9 @@ jobs:
       # This pattern will try to install  service mesh
       - name: Pattern apply (Install service mesh)
         run: |
-            mesheryctl pattern apply -f ./.github/install/deploy_istio.yaml
+            touch pattern.yaml
+            echo ${{ inputs.patternfile }} > ./pattern.yaml
+            mesheryctl pattern apply -f ./pattern.yaml
 
 
       - name: Sleep for 60 sec

@@ -18,5 +18,13 @@ jobs:
       deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
       service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
       adapter_name: istio
+      patternfile: "name: IstioSM
+        version: 1.0.1
+        services:
+          istio:
+            type: IstioMesh
+            namespace: istio-system
+            settings:
+              version: 1.9.1"
     secrets:
       token: ${{ secrets.PROVIDER_TOKEN }}
