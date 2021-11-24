@@ -101,9 +101,9 @@ jobs:
         run: |
           podnames="istio-egressgateway,istio-ingressgateway,istiod"
           nsnames="istio-system,istio-system,istio-system"
-          set -f                      # avoid globbing (expansion of *).
-          pods=(${podnames//:/ })
-          ns=(${nsnames//:/ })
+          set -f                     
+          pods=(${podnames//,/ })
+          ns=(${nsnames//,/ })
           for i in "${!pods[@]}"
           do
               podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)

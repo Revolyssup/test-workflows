@@ -12,7 +12,7 @@ on:
       deployment_url:
         required: true
         type: string
-      pattern_url:
+      patternfile:
         required: true
         type: string
       
@@ -21,7 +21,7 @@ on:
         required: true
 
 jobs:
-  TestIstio:
+  TestAdapter:
     runs-on: ubuntu-latest
     steps:  
       - name: setting up minikube
@@ -92,9 +92,11 @@ jobs:
           config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
           echo $config  > ~/.meshery/config.yaml
 
-      # This pattern will try to install istio service mesh(Expects three pods to start in istio-system namespace-egress gateway, ingress gateway and istiod)
+      # This pattern will try to install  service mesh
       - name: Pattern apply (Install service mesh)
-        run: mesheryctl pattern apply -f ${{ inputs.pattern_url }}
+        run: |
+          touch pattern.yaml; echo ${{ inputs.patternfile }} > pattern.yaml
+          mesheryctl pattern apply -f ./pattern.yaml
 
 
       - name: Sleep for 60 sec
@@ -102,7 +104,7 @@ jobs:
    
       - name: Check adapter logs
         run: |
-            podname=$(kubectl get pods -n meshery | grep istio | tr -s ' ' | cut -d " " -f 1)
+            podname=$(kubectl get pods -n meshery | grep ${{ inputs.adapter_name }} | tr -s ' ' | cut -d " " -f 1)
             kubectl logs pod/$podname -n meshery
       - name: Check meshery logs
         run: |
@@ -113,34 +115,37 @@ jobs:
 
       - name: Check if all expected pods have started
         run: |
-          readarray -td, a <<<"${{ inputs.expected_pods }}"; declare -p a;          
-          readarray -td, ns <<<"${{ inputs.expected_pods_namespaces }}"; declare -p ns;
-          for pod in "${array[@]}"
-            do
-              podstatus=$(kubectl get pods  -n istio-system| grep $pod | tr -s ' ' | cut -d " " -f 3)
+          podnames="${{ inputs.expected_pods }}"
+          nsnames="{{ inputs.expected_pods_namespaces}}"
+          set -f                      # avoid globbing (expansion of *).
+          pods=(${podnames//:/ })
+          ns=(${nsnames//:/ })
+          for i in "${!pods[@]}"
+          do
+              podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
               echo $podstatus
               if [ "$podstatus" = "Running" ];then
-                echo "Pod $pod started"
-                 exit 0
+                echo "Pod ${pods[i]} started in namespace  ${ns[i]}"
               else 
-                 echo "Pod $pod not started"
+                 echo "Pod ${pods[i]}  not started in namespace  ${ns[i]}"
                  exit 1
               fi
-            done
+          done
 
-  #with:
+#with:
   # patternfile: `name: IstioSM
-# version: 1.0.1
-# services:
-#   istio:
-#     type: IstioMesh
-#     namespace: istio-system
-#     settings:
-#       version: 1.9.1
-# `
+  # version: 1.0.1
+  # services:
+  #   istio:
+  #     type: IstioMesh
+  #     namespace: istio-system
+  #     settings:
+  #       version: 1.9.1
+  # `
   #  expected_pods: "istio-egressgateway,istio-ingressgateway,istiod"
   #  deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
   #  service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
   # expected_pods_namespaces: "istio-system,istio-system,istio-system"
-  #secrets:
+  # adapter_name: istio
+#secrets:
   #  token: {{ secrets.PROVIDER_TOKEN }}
