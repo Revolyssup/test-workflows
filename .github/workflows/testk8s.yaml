@@ -43,8 +43,12 @@ jobs:
       # Start the adapter using yamls
       - name: Start adapter
         run: |
-          kubectl apply -f ./.github/install/meshery-istio-deployment.yaml --namespace=meshery
-          kubectl apply -f ./.github/install/meshery-istio-service.yaml --namespace=meshery
+          touch testimagedep.yaml
+          curl https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-app-mesh-deployment.yaml > ./testimagedep.yaml
+          yq eval '.spec.template.spec.containers[0].image="testistio:test"' ./testimagedep.yaml > ./testimagedep.yaml
+          cat testimagedep.yaml
+          kubectl apply -f testimagedep.yaml --namespace=meshery
+          kubectl apply -f https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml --namespace=meshery
       
       # Start tunnelling to allocate external IP to LoadBalancer type service(meshery)(SO that we can access meshery from outside)
       - name: Start tunelling
