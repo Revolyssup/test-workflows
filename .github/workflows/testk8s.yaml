@@ -99,8 +99,8 @@ jobs:
           kubectl logs pod/$podName -n meshery
       - name: Check if all expected pods have started
         run: |
-          readarray -td, a <<<"istio-egressgateway,istio-ingressgateway,istiod"; declare -p a;
-          for pod in "${array[@]}"
+          readarray -td, pods <<<"istio-egressgateway,istio-ingressgateway,istiod"; declare -p pods;
+          for pod in "${pods[@]}"
             do
               podstatus=$(kubectl get pods  -n istio-system| grep $pod | tr -s ' ' | cut -d " " -f 3)
               echo $podstatus

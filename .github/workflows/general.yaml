@@ -6,6 +6,15 @@ on:
       expected_pods:
         required: true
         type: string
+      service_url:
+        required: true
+        type: string
+      deployment_url:
+        required: true
+        type: string
+      pattern_url:
+        required: true
+        type: string
       
     secrets:
       token:
@@ -33,7 +42,7 @@ jobs:
       # Setup meshery config.yaml and auth.json
       - name: setup meshery config 
         env:
-          provider_token: ${{ secrets.PROVIDER_TOKEN }}
+          provider_token: ${{ secrets.token }}
         run:  echo $provider_token ;chmod +x ./.github/scripts/mesheryconf.sh ;./.github/scripts/mesheryconf.sh
         
       # Start meshery server (Assuming that this step will create the meshery namespace)
@@ -46,12 +55,12 @@ jobs:
       - name: Start adapter
         run: |
           touch testimagedep.yaml
-          curl https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml > ./testimagedep.yaml
+          curl ${{ inputs.deployment_url }} > ./testimagedep.yaml
           yq e -i '.spec.template.spec.containers[0].image="test:test"' ./testimagedep.yaml 
           yq e -i '.spec.template.spec.containers[0].imagePullPolicy="Never"' ./testimagedep.yaml 
           cat testimagedep.yaml
           kubectl apply -f testimagedep.yaml --namespace=meshery
-          kubectl apply -f https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml --namespace=meshery
+          kubectl apply -f ${{ inputs.service_url }} --namespace=meshery
       
       # Start tunnelling to allocate external IP to LoadBalancer type service(meshery)(SO that we can access meshery from outside)
       - name: Start tunelling
@@ -85,7 +94,7 @@ jobs:
 
       # This pattern will try to install istio service mesh(Expects three pods to start in istio-system namespace-egress gateway, ingress gateway and istiod)
       - name: Pattern apply (Install service mesh)
-        run: mesheryctl pattern apply -f ./.github/install/deploy_istio.yaml 
+        run: mesheryctl pattern apply -f ${{ inputs.pattern_url }}
 
 
       - name: Sleep for 60 sec
@@ -104,7 +113,7 @@ jobs:
 
       - name: Check if all expected pods have started
         run: |
-          readarray -td, a <<<"istio-egressgateway,istio-ingressgateway,istiod"; declare -p a;
+          readarray -td, a <<<"${{ inputs.expected_pods }}"; declare -p a;
           for pod in "${array[@]}"
             do
               podstatus=$(kubectl get pods  -n istio-system| grep $pod | tr -s ' ' | cut -d " " -f 3)
@@ -117,3 +126,10 @@ jobs:
                  exit 1
               fi
             done
+
+  #with:
+  #  expected_pods: "istio-egressgateway,istio-ingressgateway,istiod"
+  #  deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
+  #  service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
+  #secrets:
+  #  token: {{ secrets.PROVIDER_TOKEN }}
