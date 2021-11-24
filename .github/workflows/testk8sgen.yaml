@@ -11,14 +11,11 @@ on:
       - master
 jobs:
   TestIstio:
-    runs-on: ubuntu-latest
-    steps:  
-      - name: setting up minikube
-        uses: Revolyssup/test-workflows/.github/workflows/general.yaml
-        with:
-          expected_pods: "istio-egressgateway,istio-ingressgateway,istiod"
-          expected_pods_namespaces: "istio-system,istio-system,istio-system"
-          deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
-          service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
-        secrets:
-         token: {{ secrets.PROVIDER_TOKEN }}
+    uses: Revolyssup/test-workflows/.github/workflows/general.yaml@main
+    with:
+      expected_pods: "istio-egressgateway,istio-ingressgateway,istiod"
+      expected_pods_namespaces: "istio-system,istio-system,istio-system"
+      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
+      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
+    secrets:
+      token: {{ secrets.PROVIDER_TOKEN }}
