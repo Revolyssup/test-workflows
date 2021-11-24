@@ -113,7 +113,8 @@ jobs:
 
       - name: Check if all expected pods have started
         run: |
-          readarray -td, a <<<"${{ inputs.expected_pods }}"; declare -p a;
+          readarray -td, a <<<"${{ inputs.expected_pods }}"; declare -p a;          
+          readarray -td, ns <<<"${{ inputs.expected_pods_namespaces }}"; declare -p ns;
           for pod in "${array[@]}"
             do
               podstatus=$(kubectl get pods  -n istio-system| grep $pod | tr -s ' ' | cut -d " " -f 3)
@@ -128,8 +129,18 @@ jobs:
             done
 
   #with:
+  # patternfile: `name: IstioSM
+# version: 1.0.1
+# services:
+#   istio:
+#     type: IstioMesh
+#     namespace: istio-system
+#     settings:
+#       version: 1.9.1
+# `
   #  expected_pods: "istio-egressgateway,istio-ingressgateway,istiod"
   #  deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
   #  service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
+  # expected_pods_namespaces: "istio-system,istio-system,istio-system"
   #secrets:
   #  token: {{ secrets.PROVIDER_TOKEN }}

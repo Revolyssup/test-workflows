@@ -99,19 +99,24 @@ jobs:
           kubectl logs pod/$podName -n meshery
       - name: Check if all expected pods have started
         run: |
-          readarray -td, pods <<<"istio-egressgateway,istio-ingressgateway,istiod"; declare -p pods;
-          for pod in "${pods[@]}"
-            do
-              podstatus=$(kubectl get pods  -n istio-system| grep $pod | tr -s ' ' | cut -d " " -f 3)
+          podnames="istio-egressgateway,istio-ingressgateway,istiod"
+          nsnames="istio-system,istio-system,istio-system"
+          set -f                      # avoid globbing (expansion of *).
+          pods=(${podnames//:/ })
+          ns=(${nsnames//:/ })
+          for i in "${!pods[@]}"
+          do
+              podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
               echo $podstatus
               if [ "$podstatus" = "Running" ];then
-                echo "Pod $pod started"
+                echo "Pod ${pods[i]} started in namespace  ${ns[i]}"
                  exit 0
               else 
-                 echo "Pod $pod not started"
+                 echo "Pod ${pods[i]}  not started in namespace  ${ns[i]}"
                  exit 1
               fi
-            done
+          done
+
       #   # Check if all three pods are in a Running state
       # - name: Check if egress gateway is running in istio-system namespace
       #   run: |
