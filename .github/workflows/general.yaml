@@ -104,7 +104,7 @@ jobs:
       # This pattern will try to install  service mesh
       - name: Pattern apply (Install service mesh)
         run: |
-            mesheryctl pattern apply -f deploy/deploy_istio.yaml
+            mesheryctl pattern apply -f ./deploy/deploy_istio.yaml
 
 
       - name: Sleep for 60 sec

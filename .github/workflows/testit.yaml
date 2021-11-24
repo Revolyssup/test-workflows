@@ -16,8 +16,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: Change service mesh version in patternfile
-        run: |
-           yq e -i '.services.istio.settings.version="1.9.1"' ./.github/install/deploy_istio.yaml
+        run: | 
+           yq e -i '.services.istio.settings.version="1.9.1"' ./.github/install/deploy_istio.yaml 
            cat ./.github/install/deploy_istio.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
