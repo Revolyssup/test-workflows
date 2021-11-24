@@ -26,19 +26,15 @@ jobs:
   TestAdapter:
     runs-on: ubuntu-latest
     steps:  
-      # - name: setting up minikube
-      #   uses: manusa/actions-setup-minikube@v2.4.1
-      #   with:
-      #     minikube version: 'v1.23.2'
-      #     kubernetes version: 'v1.20.7'
-      #     driver: docker
+      - name: setting up minikube
+        uses: manusa/actions-setup-minikube@v2.4.1
+        with:
+          minikube version: 'v1.23.2'
+          kubernetes version: 'v1.20.7'
+          driver: docker
       - name: Checkout Code
         uses: actions/checkout@v2
-      - name: Download patternfile
-        uses: actions/download-artifact@v2
-        with:
-          name: patternfile
-          path: deploy
+
       - name: Check AppendFile 
         run: cd deploy; ls
       # Build the image by setting appropriate environmental variables in order to access the image from minikube
@@ -101,11 +97,15 @@ jobs:
           echo $config  > ~/.meshery/config.yaml
 
 
-
+      - name: Download patternfile
+        uses: actions/download-artifact@v2
+        with:
+          name: patternfile
+          path: deploy
       # This pattern will try to install  service mesh
       - name: Pattern apply (Install service mesh)
         run: |
-            mesheryctl pattern apply -f deploy_istio.yaml
+            mesheryctl pattern apply -f deploy/deploy_istio.yaml
 
 
       - name: Sleep for 60 sec
