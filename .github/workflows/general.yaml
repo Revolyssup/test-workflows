@@ -117,10 +117,10 @@ jobs:
       - name: Check if all expected pods have started
         run: |
           podnames="${{ inputs.expected_pods }}"
-          nsnames="{{ inputs.expected_pods_namespaces}}"
+          nsnames="${{ inputs.expected_pods_namespaces}}"
           set -f                      # avoid globbing (expansion of *).
-          pods=(${podnames//:/ })
-          ns=(${nsnames//:/ })
+          pods=(${podnames//,/ })
+          ns=(${nsnames//,/ })
           for i in "${!pods[@]}"
           do
               podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
