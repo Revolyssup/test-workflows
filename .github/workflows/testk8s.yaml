@@ -45,7 +45,7 @@ jobs:
         run: |
           touch testimagedep.yaml
           curl https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml > ./testimagedep.yaml
-          yq eval '.spec.template.spec.containers[0].image="test:test"' ./testimagedep.yaml > ./testimagedep.yaml
+          yq e -i '.spec.template.spec.containers[0].image="test:test"' ./testimagedep.yaml 
           cat testimagedep.yaml
           kubectl apply -f testimagedep.yaml --namespace=meshery
           kubectl apply -f https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml --namespace=meshery
