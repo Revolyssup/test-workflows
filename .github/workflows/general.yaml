@@ -18,9 +18,9 @@ on:
       adapter_name:
         required: true
         type: string   
-    # secrets:
-    #   token:
-    #     required: true
+    secrets:
+      token:
+        required: true
 
 jobs:
   TestAdapter:
