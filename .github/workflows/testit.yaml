@@ -26,7 +26,7 @@ jobs:
           path: ./.github/install/deploy_istio.yaml
 
   TestIstio:
-    needs: AppendFile
+    needs: SetPatterfile
     uses: Revolyssup/test-workflows/.github/workflows/general.yaml@main
     with:
       expected_pods: istio-egressgateway,istio-ingressgateway,istiod
