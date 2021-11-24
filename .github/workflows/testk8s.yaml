@@ -110,7 +110,6 @@ jobs:
               echo $podstatus
               if [ "$podstatus" = "Running" ];then
                 echo "Pod ${pods[i]} started in namespace  ${ns[i]}"
-                 exit 0
               else 
                  echo "Pod ${pods[i]}  not started in namespace  ${ns[i]}"
                  exit 1
