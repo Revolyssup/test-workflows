@@ -6,15 +6,16 @@ on:
       expected_pods:
         required: true
         type: string
+      expected_pods_namespaces:
+        required: true
+        type: string
       service_url:
         required: true
         type: string
       deployment_url:
         required: true
         type: string
-      patternfile:
-        required: true
-        type: string
+
       
     secrets:
       token:
@@ -95,8 +96,7 @@ jobs:
       # This pattern will try to install  service mesh
       - name: Pattern apply (Install service mesh)
         run: |
-          touch pattern.yaml; echo ${{ inputs.patternfile }} > pattern.yaml
-          mesheryctl pattern apply -f ./pattern.yaml
+            mesheryctl pattern apply -f ./.github/install/deploy_istio.yaml
 
 
       - name: Sleep for 60 sec
