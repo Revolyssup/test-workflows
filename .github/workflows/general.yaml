@@ -34,7 +34,11 @@ jobs:
           driver: docker
       - name: Checkout Code
         uses: actions/checkout@v2
-
+      - name: Download patternfile
+        uses: actions/download-artifact@v2
+        with:
+          name: patternfile
+          path: deploy_istio.yaml
       # Build the image by setting appropriate environmental variables in order to access the image from minikube
       - name: Build the tagged Docker image
         run: |
@@ -95,11 +99,7 @@ jobs:
           echo $config  > ~/.meshery/config.yaml
 
 
-      - name: Download patternfile
-        uses: actions/download-artifact@v2
-        with:
-          name: patternfile
-          path: deploy_istio.yaml
+
       # This pattern will try to install  service mesh
       - name: Pattern apply (Install service mesh)
         run: |
