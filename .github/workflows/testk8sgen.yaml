@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:  
       - name: setting up minikube
-        uses: "Revolyssup/test-workflows/.github/workflows/general.yaml"
+        uses: Revolyssup/test-workflows/.github/workflows/general.yaml
         with:
           expected_pods: "istio-egressgateway,istio-ingressgateway,istiod"
           expected_pods_namespaces: "istio-system,istio-system,istio-system"
