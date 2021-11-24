@@ -26,12 +26,12 @@ jobs:
   TestAdapter:
     runs-on: ubuntu-latest
     steps:  
-      - name: setting up minikube
-        uses: manusa/actions-setup-minikube@v2.4.1
-        with:
-          minikube version: 'v1.23.2'
-          kubernetes version: 'v1.20.7'
-          driver: docker
+      # - name: setting up minikube
+      #   uses: manusa/actions-setup-minikube@v2.4.1
+      #   with:
+      #     minikube version: 'v1.23.2'
+      #     kubernetes version: 'v1.20.7'
+      #     driver: docker
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: Download patternfile
