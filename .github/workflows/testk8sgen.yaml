@@ -18,5 +18,5 @@ jobs:
       deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
       service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
       adapter_name: istio
-    # secrets:
-    #      token: {{ secrets.PROVIDER_TOKEN }}
+    secrets:
+      token: ${{ secrets.PROVIDER_TOKEN }}
