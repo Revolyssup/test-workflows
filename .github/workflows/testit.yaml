@@ -10,12 +10,12 @@ on:
     branches:
       - master
 jobs:
-  AppendFile:
+  SetPatterfile:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
-      - name: Change version
+      - name: Change service mesh version in patternfile
         run: |
            yq e -i '.services.istio.settings.version="1.9.1"' ./.github/install/deploy_istio.yaml
            cat ./.github/install/deploy_istio.yaml

@@ -35,8 +35,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Check AppendFile 
-        run: cd deploy; ls
+
       # Build the image by setting appropriate environmental variables in order to access the image from minikube
       - name: Build the tagged Docker image
         run: |
