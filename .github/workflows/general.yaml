@@ -94,6 +94,12 @@ jobs:
           config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
           echo $config  > ~/.meshery/config.yaml
 
+
+      - name: Download patternfile
+        uses: actions/download-artifact@v1
+        with:
+          name: patternfile
+          path: .github/install/deploy_istio.yaml
       # This pattern will try to install  service mesh
       - name: Pattern apply (Install service mesh)
         run: |
