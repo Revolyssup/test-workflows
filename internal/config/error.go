@@ -19,21 +19,30 @@ import (
 )
 
 const (
-	ErrEmptyConfigCode           = "1000"
-	ErrGetLatestReleasesCode     = "1001"
-	ErrGetLatestReleaseNamesCode = "1002"
+	// ErrEmptyConfigCode represents the error when the configuration is either empty
+	// or is invalid
+	ErrEmptyConfigCode = "1029"
+
+	// ErrGetLatestReleasesCode represents the error which occurs during the process of getting
+	// latest releases
+	ErrGetLatestReleasesCode = "1030"
+
+	// ErrGetLatestReleaseNamesCode represents the error which occurs during the process of extracting
+	// release names
+	ErrGetLatestReleaseNamesCode = "1031"
 )
 
 var (
+	// ErrEmptyConfig error is the error when config is invalid
 	ErrEmptyConfig = errors.New(ErrEmptyConfigCode, errors.Alert, []string{"Config is empty"}, []string{}, []string{}, []string{})
 )
 
-// ErrGetLatestReleases is the error for fetching istio releases
+// ErrGetLatestReleases is the error for fetching nsm-mesh releases
 func ErrGetLatestReleases(err error) error {
-	return errors.New(ErrGetLatestReleasesCode, errors.Alert, []string{"unable to fetch release info"}, []string{err.Error(), "Unable to get the latest release info from the GithubAPI"}, []string{"Checkout https://docs.github.com/en/rest/reference/repos#releases for more info"}, []string{})
+	return errors.New(ErrGetLatestReleasesCode, errors.Alert, []string{"Unable to fetch release info"}, []string{err.Error()}, []string{}, []string{})
 }
 
-// ErrGetLatestReleaseNames is the error for fetching istio releases
+// ErrGetLatestReleaseNames is the error for fetching nsm-mesh releases
 func ErrGetLatestReleaseNames(err error) error {
-	return errors.New(ErrGetLatestReleaseNamesCode, errors.Alert, []string{"failed to extract release names"}, []string{err.Error()}, []string{"Invalid release format"}, []string{})
+	return errors.New(ErrGetLatestReleaseNamesCode, errors.Alert, []string{"Failed to extract release names"}, []string{err.Error()}, []string{}, []string{})
 }

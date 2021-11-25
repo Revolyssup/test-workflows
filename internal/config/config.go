@@ -14,70 +14,38 @@ import (
 )
 
 const (
-	// Constants to use in log statements
-	LabelNamespace = "label-namespace"
-
-	ServicePatchFile = "service-patch-file"
-	CPPatchFile      = "cp-patch-file"
-	ControlPatchFile = "control-patch-file"
-	FilterPatchFile  = "filter-patch-file"
-
-	// Istio vet operation
-	IstioVetOperation = "istio-vet"
-
-	// Configure Envoy filter operation
-	EnvoyFilterOperation = "envoy-filter-operation"
-
-	// Addons that the adapter supports
-	PrometheusAddon = "prometheus-addon"
-	GrafanaAddon    = "grafana-addon"
-	KialiAddon      = "kiali-addon"
-	JaegerAddon     = "jaeger-addon"
-	ZipkinAddon     = "zipkin-addon"
-
-	// Policies
-	DenyAllPolicyOperation     = "deny-all-policy-operation"
-	StrictMTLSPolicyOperation  = "strict-mtls-policy-operation"
-	MutualMTLSPolicyOperation  = "mutual-mtls-policy-operation"
-	DisableMTLSPolicyOperation = "disable-mtls-policy-operation"
-
-	// OAM Metadata constants
+	// OAM metadata constants
 	OAMAdapterNameMetadataKey       = "adapter.meshery.io/name"
 	OAMComponentCategoryMetadataKey = "ui.meshery.io/category"
 )
 
 var (
-	// IstioMeshOperation is the default name for the install
-	// and uninstall commands on the istio mesh
-	IstioOperation = strings.ToLower(smp.ServiceMesh_ISTIO.Enum().String())
+	// TraefikMeshOperation is the default name for the install
+	// and uninstall commands on the traefik mesh
+	TraefikMeshOperation = strings.ToLower(smp.ServiceMesh_TRAEFIK_MESH.Enum().String())
 
-	ServerVersion  = status.None
-	ServerGitSHA   = status.None
 	configRootPath = path.Join(utils.GetHome(), ".meshery")
 
-	Config = configprovider.Options{
-		FilePath: configRootPath,
-		FileName: "istio",
-		FileType: "yaml",
-	}
-
+	// ServerConfig is the configuration for the gRPC server
 	ServerConfig = map[string]string{
-		"name":     smp.ServiceMesh_ISTIO.Enum().String(),
+		"name":     smp.ServiceMesh_TRAEFIK_MESH.Enum().String(),
+		"port":     "10006",
 		"type":     "adapter",
-		"port":     "10000",
 		"traceurl": status.None,
 	}
 
+	// MeshSpec is the spec for the service mesh associated with this adapter
 	MeshSpec = map[string]string{
-		"name":    smp.ServiceMesh_ISTIO.Enum().String(),
-		"status":  status.NotInstalled,
+		"name":    smp.ServiceMesh_TRAEFIK_MESH.Enum().String(),
+		"status":  status.None,
 		"version": status.None,
 	}
 
+	// ProviderConfig is the config for the configuration provider
 	ProviderConfig = map[string]string{
 		configprovider.FilePath: configRootPath,
 		configprovider.FileType: "yaml",
-		configprovider.FileName: "istio",
+		configprovider.FileName: "traefik-mesh",
 	}
 
 	// KubeConfig - Controlling the kubeconfig lifecycle with viper
@@ -87,20 +55,27 @@ var (
 		configprovider.FileName: "kubeconfig",
 	}
 
+	// Operations represents the set of valid operations that are available
+	// to the adapter
 	Operations = getOperations(common.Operations)
 )
 
 // New creates a new config instance
 func New(provider string) (h config.Handler, err error) {
+	opts := configprovider.Options{
+		FilePath: configRootPath,
+		FileName: "traefik",
+		FileType: "yaml",
+	}
 	// Config provider
 	switch provider {
 	case configprovider.ViperKey:
-		h, err = configprovider.NewViper(Config)
+		h, err = configprovider.NewViper(opts)
 		if err != nil {
 			return nil, err
 		}
 	case configprovider.InMemKey:
-		h, err = configprovider.NewInMem(Config)
+		h, err = configprovider.NewInMem(opts)
 		if err != nil {
 			return nil, err
 		}
@@ -108,17 +83,17 @@ func New(provider string) (h config.Handler, err error) {
 		return nil, ErrEmptyConfig
 	}
 
-	// Setup server config
+	// Setup Server config
 	if err := h.SetObject(adapter.ServerKey, ServerConfig); err != nil {
 		return nil, err
 	}
 
-	// Setup mesh config
+	// setup Mesh config
 	if err := h.SetObject(adapter.MeshSpecKey, MeshSpec); err != nil {
 		return nil, err
 	}
 
-	// Setup Operations Config
+	// setup Operation Config
 	if err := h.SetObject(adapter.OperationsKey, Operations); err != nil {
 		return nil, err
 	}
@@ -126,6 +101,9 @@ func New(provider string) (h config.Handler, err error) {
 	return h, nil
 }
 
+// NewKubeconfigBuilder returns a config handler based on the provider
+//
+// Valid prividers are "viper" and "in-mem"
 func NewKubeconfigBuilder(provider string) (config.Handler, error) {
 	opts := configprovider.Options{
 		FilePath: configRootPath,

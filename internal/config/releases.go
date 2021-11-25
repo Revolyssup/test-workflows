@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"regexp"
 	"sort"
-	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 )
@@ -29,25 +28,24 @@ type Asset struct {
 }
 
 // getLatestReleaseNames returns the names of the latest releases
-// limited by the "limit" parameter. It filters out all the alpha
-// rc releases and sorts the result lexographically (descending)
+// limited by the "limit" parameter. It filters out all the rc
+// releases and sorts the result lexographically (descending)
 func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
-	releases, err := GetLatestReleases(20)
+	releases, err := GetLatestReleases(10)
 	if err != nil {
 		return []adapter.Version{}, ErrGetLatestReleaseNames(err)
 	}
 
-	// Filter out the rc and alpha releases
+	// Filter out the rc releases
 	result := make([]adapter.Version, limit)
-	r, err := regexp.Compile(`Istio \d+(\.\d+){2,}$`)
+	r, err := regexp.Compile(`\d+(\.\d+){2,}$`)
 	if err != nil {
 		return []adapter.Version{}, ErrGetLatestReleaseNames(err)
 	}
 
 	for _, release := range releases {
-		releaseStr := string(release.Name)
-		versionStr := strings.Split(releaseStr, " ")[1]
-		if r.MatchString(releaseStr) {
+		versionStr := string(release.Name)
+		if r.MatchString(versionStr) {
 			result = append(result, adapter.Version(versionStr))
 		}
 	}
@@ -64,9 +62,9 @@ func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
 	return result[:limit], nil
 }
 
-// GetLatestReleases fetches the latest releases from the istio repository
+// GetLatestReleases fetches the latest releases from the traefik mesh repository
 func GetLatestReleases(releases uint) ([]*Release, error) {
-	releaseAPIURL := "https://api.github.com/repos/istio/istio/releases?per_page=" + fmt.Sprint(releases)
+	releaseAPIURL := "https://api.github.com/repos/traefik/mesh/releases?per_page=" + fmt.Sprint(releases)
 	// We need a variable url here hence using nosec
 	// #nosec
 	resp, err := http.Get(releaseAPIURL)

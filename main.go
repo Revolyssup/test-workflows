@@ -11,30 +11,34 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strings"
 	"time"
 
-	"github.com/layer5io/meshery-istio/istio"
+	"github.com/layer5io/meshery-traefik-mesh/traefik"
+	"github.com/layer5io/meshery-traefik-mesh/traefik/oam"
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/utils/manifests"
-	smp "github.com/layer5io/service-mesh-performance/spec"
+	"gopkg.in/yaml.v2"
 
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
-	"github.com/layer5io/meshery-istio/internal/config"
-	"github.com/layer5io/meshery-istio/istio/oam"
+	"github.com/layer5io/meshery-traefik-mesh/internal/config"
 	configprovider "github.com/layer5io/meshkit/config/provider"
+	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 var (
-	serviceName = "istio-adaptor"
+	serviceName = "traefik-mesh-adaptor"
 	version     = "none"
 	gitsha      = "none"
 )
@@ -50,7 +54,6 @@ func init() {
 
 // main is the entrypoint of the adaptor
 func main() {
-	fmt.Println("THIS IS IS WORKFLOW")
 	// Initialize Logger instance
 	log, err := logger.New(serviceName, logger.Options{
 		Format:     logger.SyslogLogFormat,
@@ -100,7 +103,7 @@ func main() {
 	// }
 
 	// Initialize Handler intance
-	handler := istio.New(cfg, log, kubeconfigHandler)
+	handler := traefik.New(cfg, log, kubeconfigHandler)
 	handler = adapter.AddLogger(log, handler)
 
 	service.Handler = handler
@@ -108,6 +111,7 @@ func main() {
 	service.StartedAt = time.Now()
 	service.Version = version
 	service.GitSHA = gitsha
+
 	go registerCapabilities(service.Port, log)        //Registering static capabilities
 	go registerDynamicCapabilities(service.Port, log) //Registering latest capabilities periodically
 
@@ -149,17 +153,17 @@ func serviceAddress() string {
 }
 
 func registerCapabilities(port string, log logger.Handler) {
+	log.Info("Registering static capabilities...")
 	// Register workloads
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
-
 	// Register traits
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
+	log.Info("Registeration of static capabilities completed")
 }
-
 func registerDynamicCapabilities(port string, log logger.Handler) {
 	registerWorkloads(port, log)
 	//Start the ticker
@@ -171,22 +175,22 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 	}
 
 }
+
 func registerWorkloads(port string, log logger.Handler) {
-	release, err := config.GetLatestReleases(1)
+	appVersion, chartVersion, err := getLatestValidAppVersionAndChartVersion()
 	if err != nil {
-		log.Info("Could not get latest stable release")
+		log.Info(err)
 		return
 	}
-	version := release[0].TagName
-	log.Info("Registering latest workload components for version ", version)
+	log.Info("Registering latest workload components for version ", appVersion, " and chart version ", chartVersion)
 	// Register workloads
 	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
-		TimeoutInMinutes: 30,
-		URL:              "https://raw.githubusercontent.com/istio/istio/" + version + "/manifests/charts/base/crds/crd-all.gen.yaml",
-		GenerationMethod: adapter.Manifests,
+		TimeoutInMinutes: 60,
+		URL:              "https://helm.traefik.io/traefik/traefik-" + chartVersion + ".tgz",
+		GenerationMethod: adapter.HelmCHARTS,
 		Config: manifests.Config{
-			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_ISTIO)],
-			MeshVersion: version,
+			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_TRAEFIK_MESH)],
+			MeshVersion: appVersion,
 			Filter: manifests.CrdFilter{
 				RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
 				NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
@@ -199,10 +203,39 @@ func registerWorkloads(port string, log logger.Handler) {
 				GField:        "group",
 			},
 		},
-		Operation: config.IstioOperation,
+		Operation: config.TraefikMeshOperation,
 	}); err != nil {
 		log.Info(err.Error())
 		return
 	}
 	log.Info("Latest workload components successfully registered.")
+}
+
+// returns latest valid appversion and chartversion
+func getLatestValidAppVersionAndChartVersion() (string, string, error) {
+	res, err := http.Get("https://helm.traefik.io/traefik/index.yaml")
+	if err != nil {
+		return "", "", config.ErrGetLatestReleases(err)
+	}
+	content, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", "", config.ErrGetLatestReleases(err)
+	}
+	var h helmIndex
+	err = yaml.Unmarshal(content, &h)
+	if err != nil {
+		return "", "", config.ErrGetLatestReleases(err)
+	}
+
+	return h.Entries["traefik"][0].AppVersion, h.Entries["traefik"][0].Version, nil
+}
+
+// Below structs are helper structs to unmarshall and extract certain fields from helm chart's index.yaml
+type helmIndex struct {
+	Entries map[string][]data `yaml:"entries"`
+}
+
+type data struct {
+	AppVersion string `yaml:"appVersion"`
+	Version    string `yaml:"version"`
 }
