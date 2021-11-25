@@ -27,7 +27,7 @@ jobs:
 
   TestIstio:
     needs: SetPatterfile
-    uses: Revolyssup/test-workflows/.github/workflows/general.yaml@main
+    uses: Revolyssup/ds-algo-atstl/.github/workflows/general.yaml@main
     with:
       expected_pods: istio-egressgateway,istio-ingressgateway,istiod
       expected_pods_namespaces: istio-system,istio-system,istio-system
