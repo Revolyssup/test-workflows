@@ -17,13 +17,13 @@ jobs:
         uses: actions/checkout@v2
       - name: Change service mesh version in patternfile
         run: | 
-           yq e -i '.services.istio.settings.version="1.9.1"' ./.github/install/deploy_istio.yaml 
-           cat ./.github/install/deploy_istio.yaml
+           yq e -i '.services.istio.settings.version="1.9.1"' ./.github/install/deploy.yaml 
+           cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
         with:
           name: patternfile
-          path: ./.github/install/deploy_istio.yaml
+          path: ./.github/install/deploy.yaml
 
   TestIstio:
     needs: SetPatterfile
