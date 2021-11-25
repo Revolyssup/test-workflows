@@ -8,7 +8,7 @@ on:
       - "v*"
   pull_request:
     branches:
-      - master
+      - main
 jobs:
   SetPatterfile:
     runs-on: ubuntu-latest
@@ -24,7 +24,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: patternfile
-          path: ./.github/install/deploy.yaml
+          path: ./.github/install/deploy.yaml 
 
   TestIstio:
     needs: SetPatterfile
