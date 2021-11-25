@@ -74,6 +74,8 @@ func main() {
 		log.Warn(err)
 	}
 
+	fmt.Println("HELOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+
 	// Initialize application specific configs and dependencies
 	// App and request config
 	cfg, err := config.New(configprovider.ViperKey)
@@ -112,6 +114,7 @@ func main() {
 	service.Version = version
 	service.GitSHA = gitsha
 
+	fmt.Println("HELOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
 	go registerCapabilities(service.Port, log)        //Registering static capabilities
 	go registerDynamicCapabilities(service.Port, log) //Registering latest capabilities periodically
 
