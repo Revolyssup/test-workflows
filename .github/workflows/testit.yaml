@@ -28,7 +28,7 @@ jobs:
 
   TestIstio:
     needs: SetPatterfile
-    uses: Revolyssup/test-workflows/.github/workflows/general.yaml@master
+    uses: Revolyssup/test-workflows/.github/workflows/general.yaml@main
     with:
       expected_pods: grafana-core,jaeger,prometheus-core,traefik-mesh-controller,traefik-mesh-proxy
       expected_pods_namespaces: traefik,traefik,traefik,traefik,traefik
