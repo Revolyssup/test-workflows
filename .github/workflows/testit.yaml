@@ -17,7 +17,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Change service mesh version in patternfile
         run: | 
-           yq e -i '.services.istio.settings.version="1.9.1"' ./.github/install/deploy.yaml 
+           
+           yq e -i '.services.istio.settings.version="1.4.4"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
@@ -27,13 +28,13 @@ jobs:
 
   TestIstio:
     needs: SetPatterfile
-    uses: Revolyssup/ds-algo-atstl/.github/workflows/general.yaml@master
+    uses: Revolyssup/test-workflows/.github/workflows/general.yaml@master
     with:
-      expected_pods: istio-egressgateway,istio-ingressgateway,istiod
-      expected_pods_namespaces: istio-system,istio-system,istio-system
-      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
-      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
-      adapter_name: istio
+      expected_pods: grafana-core,jaeger,prometheus-core,traefik-mesh-controller,traefik-mesh-proxy
+      expected_pods_namespaces: traefik,traefik,traefik,traefik,traefik
+      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-traefik-mesh-deployment.yaml
+      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-traefik-mesh-service.yaml
+      adapter_name: traefik-mesh
       patternfile_name: deploy.yaml
     secrets:
       token: ${{ secrets.PROVIDER_TOKEN }}

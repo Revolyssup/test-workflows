@@ -50,7 +50,15 @@ jobs:
       - name: Setup meshery config and infinite token for use
         env:
           provider_token: ${{ secrets.token }}
-        run:  echo $provider_token ;chmod +x ./.github/scripts/mesheryconf.sh ;./.github/scripts/mesheryconf.sh
+        run: |
+            echo $provider_token 
+            mkdir ~/.meshery
+            config='{"contexts":{"local":{"endpoint":"http://localhost:9081","token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
+            echo $config > ~/.meshery/config.yaml	
+            cat ~/.meshery/config.yaml
+            echo '{ "meshery-provider": "Meshery", "token": null }' | jq -c '.token = "'$provider_token'"' > ~/.meshery/auth.json
+            cat ~/.meshery/auth.json
+
         
       # Start meshery server (Assuming that this step will create the meshery namespace)
       - name: Start meshery server using mesheryctl
@@ -110,8 +118,8 @@ jobs:
             mesheryctl pattern apply -f ./${{ inputs.patternfile_name }}
 
 
-      - name: Sleep for 60 sec
-        run: sleep 60s
+      - name: Sleep for 150 sec
+        run: sleep 150s
    
       - name: Check adapter logs
         run: |
