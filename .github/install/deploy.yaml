@@ -1,8 +1,8 @@
 name: TraefikSM
 version: 1.0.1
 services:
-  istio:
+  traefik:
     type: TraefikMesh
     namespace: traefik
     settings:
-      version:  # will be replaced with the latest version in the workflow
+      version: 1.4.4 # will be replaced with the latest version in the workflow
