@@ -28,7 +28,7 @@ jobs:
 
   TestIstio:
     needs: SetPatterfile
-    uses: layer5/meshery/.github/workflows/testadapters.yaml@master
+    uses: meshery/meshery/.github/workflows/testadapters.yaml@f358d979d45ea6652534b60b324b3c07f8150224
     with:
       expected_pods: grafana-core,jaeger,prometheus-core,traefik-mesh-controller,traefik-mesh-proxy
       expected_pods_namespaces: traefik,traefik,traefik,traefik,traefik
