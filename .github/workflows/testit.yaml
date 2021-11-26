@@ -37,7 +37,9 @@ jobs:
 
   TestTraefikMesh:
     needs: SetPatterfile
-    uses: meshery/meshery/.github/workflows/testadapters.yaml@master
+    # uses: meshery/meshery/.github/workflows/testadapters.yaml@master
+    uses: Revolyssup/test-workflows/.github/workflows/general.yaml@main
+
     with:
       expected_pods: grafana-core,jaeger,prometheus-core,traefik-mesh-controller,traefik-mesh-proxy
       expected_pods_namespaces: traefik,traefik,traefik,traefik,traefik
