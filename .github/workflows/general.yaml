@@ -45,7 +45,6 @@ jobs:
         run: |
           eval $(minikube -p minikube docker-env) 
           docker build  -t test:test .
-
       # Setup meshery config.yaml and auth.json
       - name: Setup meshery config and infinite token for use
         env:
@@ -62,7 +61,6 @@ jobs:
               echo '{ "meshery-provider": "Meshery", "token": null }' | jq -c '.token = "'$provider_token'"' > ~/.meshery/auth.json
             fi
             cat ~/.meshery/auth.json
-
         
       # Start meshery server (Assuming that this step will create the meshery namespace)
       - name: Start meshery server using mesheryctl
@@ -92,7 +90,6 @@ jobs:
         run: |
           podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
           kubectl logs pod/$podName -n meshery
-
       # If external IP has not been allotted then server is unreachable, exit here in that case
       - name: Check if meshery has been allotted external IP
         run: |
@@ -101,7 +98,6 @@ jobs:
               if [ "$svcstatus" = "<pending>" ];then
                  exit 1
               fi
-
       # Reset meshery's address to the external IP in config.yaml such that mesheryctl can reach it
       - name: Reset meshery address
         run: |
@@ -110,8 +106,6 @@ jobs:
           echo "this is $svcip"
           config='{"contexts":{"local":{"endpoint":'$svcip',"token":"Default","platform":"kubernetes","adapters":[],"channel":"stable","version":"latest"}},"current-context":"local","tokens":[{"location":"auth.json","name":"Default"}]}'
           echo $config  > ~/.meshery/config.yaml
-
-
       - name: Download patternfile
         uses: actions/download-artifact@v2
         with:
@@ -120,10 +114,9 @@ jobs:
       - name: Pattern apply (Install service mesh)
         run: |
             mesheryctl pattern apply -f ./${{ inputs.patternfile_name }}
-
-
-      - name: Sleep for 300 sec
-        run: sleep 300s
+      # Wait for sometime to get some logs
+      - name: Sleep for 30 sec
+        run: sleep 30s
    
       - name: Check adapter logs
         run: |
@@ -133,7 +126,6 @@ jobs:
         run: |
           podName=$(kubectl get pods -o wide -n meshery | sed -n 2p | tr -s ' ' | cut -d " " -f 1)
           kubectl logs pod/$podName -n meshery
-
       - name: Whole status for debugging
         run: kubectl get all -A
         # Check if all  pods are in a Running state
@@ -148,7 +140,6 @@ jobs:
           pods=(${podnames//,/ })
           ns=(${nsnames//,/ })
           breakout=1
-
           
           while [ $SECONDS -lt $end ]; do
               for i in "${!pods[@]}"
@@ -163,8 +154,6 @@ jobs:
               fi
               breakout=1
           done
-
-
           for i in "${!pods[@]}"
           do
             podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
@@ -175,5 +164,4 @@ jobs:
               exitstatus=1
             fi
           done
-
           exit $exitstatus
