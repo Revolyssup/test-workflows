@@ -25,7 +25,7 @@ jobs:
         run: | 
            version="${{ steps.gettag.outputs.release }}"
            version=${version#"v"} #remove 'v' if its present
-           yq e -i '.services.traefik.settings.version="$version"' ./.github/install/deploy.yaml 
+           yq e -i '.services.traefik.settings.version=$version' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
