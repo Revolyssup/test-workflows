@@ -23,7 +23,7 @@ jobs:
           excludes: prerelease, draft
       - name: Change service mesh version in patternfile
         run: | 
-           version=${{ steps.gettag.outputs.release }}
+           version="${{ steps.gettag.outputs.release }}"
            version=${version#"v"} #remove 'v' if its present
            yq e -i '.services.traefik.settings.version="$version"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
