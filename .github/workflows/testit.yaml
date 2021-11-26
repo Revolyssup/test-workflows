@@ -24,7 +24,9 @@ jobs:
       - name: Change service mesh version in patternfile
         run: | 
            version="${{ steps.gettag.outputs.release }}"
+           echo "$version before trim"
            version=${version#"v"} #remove 'v' if its present
+           echo "$version after trim"
            yq e -i '.services.traefik.settings.version=$version' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
