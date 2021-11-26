@@ -1,4 +1,4 @@
-name: Test Istio Adapter
+name: Test TraefikMesh Adapter
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
       - name: Change service mesh version in patternfile
         run: | 
            
-           yq e -i '.services.traefik.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
+           yq e -i '.services.traefik.settings.version="1.4.4"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
@@ -32,7 +32,7 @@ jobs:
           name: patternfile
           path: ./.github/install/deploy.yaml 
 
-  TestIstio:
+  TestTraefikMesh:
     needs: SetPatterfile
     uses: meshery/meshery/.github/workflows/testadapters.yaml@master
     with:
