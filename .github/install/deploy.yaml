@@ -5,4 +5,4 @@ services:
     type: TraefikMesh
     namespace: traefik
     settings:
-      version: # will be replaced with the latest version in the workflow
+      version: 1.4.4 # will be replaced with the latest version in the workflow
