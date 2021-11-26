@@ -147,24 +147,32 @@ jobs:
           set -f                      
           pods=(${podnames//,/ })
           ns=(${nsnames//,/ })
+          breakout=1
+
+          
           while [ $SECONDS -lt $end ]; do
               for i in "${!pods[@]}"
               do
                   podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
-                  if [ "$podstatus" = "Running" ];then
-                    echo "Pod ${pods[i]} started in namespace  ${ns[i]}"
-                    break
+                  if [ "$podstatus" != "Running" ];then
+                    breakout=0
                   fi
               done
+              if [ $breakout -eq 1 ];then
+                break
+              fi
+              breakout=1
           done
+
+
           for i in "${!pods[@]}"
           do
             podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
             if [ "$podstatus" = "Running" ];then
               echo "Pod ${pods[i]} started in namespace  ${ns[i]}"
             else
+              echo "Pod ${pods[i]} did not start in namespace ${ns[i]} "
               exitstatus=1
-              echo "Pod ${pods[i]} did not started in namespace ${ns[i]} "
             fi
           done
 
