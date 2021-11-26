@@ -1,5 +1,5 @@
 # This workflow will be called/referenced in each of the adapters and runs in the context of adapter
-name: Test for adapters using patternfile
+name: Adapter Integration - Core
 
 on:
   workflow_call:
@@ -122,8 +122,8 @@ jobs:
             mesheryctl pattern apply -f ./${{ inputs.patternfile_name }}
 
 
-      - name: Sleep for 30 sec to have some more logs in adapters and meshery server
-        run: sleep 30s
+      - name: Sleep for 300 sec
+        run: sleep 300s
    
       - name: Check adapter logs
         run: |
@@ -177,4 +177,3 @@ jobs:
           done
 
           exit $exitstatus
-
