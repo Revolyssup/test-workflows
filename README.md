@@ -1,34 +1,24 @@
-<p style="text-align:center;" align="center"><a href="https://layer5.io/meshery"><img align="center" style="margin-bottom:20px;" src="img/readme/meshery-logo-light-text.svg"  width="70%" /></a><br /><br /></p>
+<p style="text-align:center;" align="center"><a href="https://layer5.io/meshery"><img align="center" style="margin-bottom:20px;" src="https://raw.githubusercontent.com/layer5io/layer5/master/.github/assets/images/meshery/meshery-logo-tag-light-text-side.png"  width="70%" /></a><br /><br /></p>
 
-# Meshery Adapter for Traefik Mesh
+# Meshery Adapter for Linkerd
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-maesh.svg)](https://hub.docker.com/r/layer5/meshery-maesh)
-[![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-traefik-mesh)](https://goreportcard.com/report/github.com/layer5io/meshery-traefik-mesh)
-[![Build Status](https://github.com/layer5io/meshery-traefik-mesh/workflows/Meshery-Maesh/badge.svg)](https://github.com/layer5io/meshery-traefik-mesh/actions)
-[![GitHub](https://img.shields.io/github/license/layer5io/meshery-maesh.svg)](LICENSE)
-[![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-traefik-mesh/help%20wanted.svg)](https://github.com/layer5io/meshery-traefik-mesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-[![Website](https://img.shields.io/website/https/layer5.io/meshery.svg)](https://layer5.io/meshery/)
-[![Twitter Follow](https://img.shields.io/twitter/follow/layer5.svg?label=Follow&style=social)](https://twitter.com/intent/follow?screen_name=mesheryio)
+[![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-linkerd.svg)](https://hub.docker.com/r/layer5/meshery-linkerd)
+[![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-linkerd)](https://goreportcard.com/report/github.com/layer5io/meshery-linkerd)
+[![Build Status](https://github.com/layer5io/meshery-linkerd/workflows/Meshery-Linkerd/badge.svg)](https://github.com/layer5io/meshery-linkerd/actions)
+[![GitHub](https://img.shields.io/github/license/layer5io/meshery-linkerd.svg)](https://github.com/layer5io/meshery-linkerd/blob/master/LICENSE)
+[![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-linkerd/help%20wanted.svg)](https://github.com/layer5io/meshery-linkerd/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[![Website](https://img.shields.io/website/https/layer5.io/meshery.svg)](https://layer5.io/meshery)
+[![Twitter Follow](https://img.shields.io/twitter/follow/layer5.svg?label=Follow&style=social)](https://twitter.com/intent/follow?screen_name=layer5)
 [![Slack](https://img.shields.io/badge/Slack-@layer5.svg?logo=slack)](http://slack.layer5.io)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3564/badge)](https://bestpractices.coreinfrastructure.org/projects/3564)
 
 <p style="clear:both;">
 <h2><a href="https://layer5.io/meshery">Meshery</a></h2>
 <a href="https://meshery.io"><img src="img/readme/meshery-logo-light-text.svg"
-style="margin:10px;" width="125px" 
+style="margin:10px;" width="125px"
 alt="Meshery - the Service Mesh Management Plane" align="left" /></a>
-<a href="https://meshery.io">Meshery</a> is the multi-service mesh management plane offering lifecycle management of more types of service meshes than any other tool available today. Meshery facilitates adopting, configuring, operating and managing performance of different service meshes and incorporates the collection and display of metrics from applications running on top of any service mesh. 
+<a href="https://meshery.io">Meshery</a> is the multi-service mesh management plane offering lifecycle management of more types of service meshes than any other tool available today. Meshery facilitates adopting, configuring, operating and managing performance of different service meshes and incorporates the collection and display of metrics from applications running on top of any service mesh.
 <br /><br /><p align="center"><i>If you’re using Meshery or if you like the project, please <a href="https://github.com/layer5io/meshery/stargazers">★</a> star this repository to show your support! 🤩</i></p>
-</p>
-
-<p style="clear:both;">
-<h2><a href="https://traefik.io/traefik-mesh/">Traefik Mesh</a></h2>
-<a href="https://traefik.io/traefik-mesh/"><img src="img/readme/traefik.svg"
-style="margin:10px;" height="125px" width="140px" 
-alt="Traefik Mesh - Simpler Service Mesh" align="left" /></a>
-<p>
-<a href="https://traefik.io/traefik-mesh/">Traefik Mesh</a> is a straight-forward, easy to configure, and non-invasive service mesh that allows visibility and management of the traffic flows inside any Kubernetes cluster.</p>
-<br /><br />
 </p>
 
 <p style="clear:both;">

@@ -3,6 +3,7 @@ package config
 import (
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
@@ -10,42 +11,58 @@ import (
 	"github.com/layer5io/meshery-adapter-library/status"
 	configprovider "github.com/layer5io/meshkit/config/provider"
 	"github.com/layer5io/meshkit/utils"
+	"github.com/layer5io/meshkit/utils/walker"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 const (
-	// OAM metadata constants
+	Development = "development"
+	Production  = "production"
+
+	AnnotateNamespace = "annotate-namespace"
+	ServicePatchFile  = "service-patch-file"
+	HelmChartURL      = "helm-chart-url"
+
+	// Addons that the adapter supports
+	JaegerAddon       = "jaeger-addon"
+	VizAddon          = "viz-addon"
+	MultiClusterAddon = "multicluster-addon"
+	SMIAddon          = "smi-addon"
+	// OAM Metadata constants
 	OAMAdapterNameMetadataKey       = "adapter.meshery.io/name"
 	OAMComponentCategoryMetadataKey = "ui.meshery.io/category"
 )
 
 var (
-	// TraefikMeshOperation is the default name for the install
-	// and uninstall commands on the traefik mesh
-	TraefikMeshOperation = strings.ToLower(smp.ServiceMesh_TRAEFIK_MESH.Enum().String())
+	// LinkerdOperation is the default name for the install
+	// and uninstall commands on the Linkerd
+	LinkerdOperation = strings.ToLower(smp.ServiceMesh_LINKERD.Enum().String())
 
 	configRootPath = path.Join(utils.GetHome(), ".meshery")
 
-	// ServerConfig is the configuration for the gRPC server
+	Config = configprovider.Options{
+		FilePath: configRootPath,
+		FileName: "linkerd",
+		FileType: "yaml",
+	}
+
 	ServerConfig = map[string]string{
-		"name":     smp.ServiceMesh_TRAEFIK_MESH.Enum().String(),
-		"port":     "10006",
+		"name":     smp.ServiceMesh_LINKERD.Enum().String(),
+		"port":     "10001",
 		"type":     "adapter",
 		"traceurl": status.None,
 	}
 
-	// MeshSpec is the spec for the service mesh associated with this adapter
 	MeshSpec = map[string]string{
-		"name":    smp.ServiceMesh_TRAEFIK_MESH.Enum().String(),
-		"status":  status.None,
+		"name":    smp.ServiceMesh_LINKERD.Enum().String(),
+		"status":  status.NotInstalled,
 		"version": status.None,
 	}
 
-	// ProviderConfig is the config for the configuration provider
 	ProviderConfig = map[string]string{
 		configprovider.FilePath: configRootPath,
 		configprovider.FileType: "yaml",
-		configprovider.FileName: "traefik-mesh",
+		configprovider.FileName: "linkerd",
 	}
 
 	// KubeConfig - Controlling the kubeconfig lifecycle with viper
@@ -55,27 +72,20 @@ var (
 		configprovider.FileName: "kubeconfig",
 	}
 
-	// Operations represents the set of valid operations that are available
-	// to the adapter
 	Operations = getOperations(common.Operations)
 )
 
 // New creates a new config instance
 func New(provider string) (h config.Handler, err error) {
-	opts := configprovider.Options{
-		FilePath: configRootPath,
-		FileName: "traefik",
-		FileType: "yaml",
-	}
 	// Config provider
 	switch provider {
 	case configprovider.ViperKey:
-		h, err = configprovider.NewViper(opts)
+		h, err = configprovider.NewViper(Config)
 		if err != nil {
 			return nil, err
 		}
 	case configprovider.InMemKey:
-		h, err = configprovider.NewInMem(opts)
+		h, err = configprovider.NewInMem(Config)
 		if err != nil {
 			return nil, err
 		}
@@ -83,17 +93,17 @@ func New(provider string) (h config.Handler, err error) {
 		return nil, ErrEmptyConfig
 	}
 
-	// Setup Server config
+	// Setup server config
 	if err := h.SetObject(adapter.ServerKey, ServerConfig); err != nil {
 		return nil, err
 	}
 
-	// setup Mesh config
+	// Setup mesh config
 	if err := h.SetObject(adapter.MeshSpecKey, MeshSpec); err != nil {
 		return nil, err
 	}
 
-	// setup Operation Config
+	// Setup Operations Config
 	if err := h.SetObject(adapter.OperationsKey, Operations); err != nil {
 		return nil, err
 	}
@@ -101,9 +111,6 @@ func New(provider string) (h config.Handler, err error) {
 	return h, nil
 }
 
-// NewKubeconfigBuilder returns a config handler based on the provider
-//
-// Valid prividers are "viper" and "in-mem"
 func NewKubeconfigBuilder(provider string) (config.Handler, error) {
 	opts := configprovider.Options{
 		FilePath: configRootPath,
@@ -118,10 +125,31 @@ func NewKubeconfigBuilder(provider string) (config.Handler, error) {
 	case configprovider.InMemKey:
 		return configprovider.NewInMem(opts)
 	}
+
 	return nil, ErrEmptyConfig
 }
 
 // RootPath returns the config root path for the adapter
 func RootPath() string {
 	return configRootPath
+}
+func threadSafeAppend(fs *[]string, name string, m *sync.RWMutex) {
+	m.Lock()
+	defer m.Unlock()
+	*fs = append(*fs, name)
+}
+
+// GetFileNames takes the url of a github repo and the path to a directory. Then returns all the filenames from that directory
+func GetFileNames(owner string, repo string, path string) ([]string, error) {
+	g := walker.NewGit()
+	var filenames []string
+	var m sync.RWMutex
+	err := g.Owner(owner).Repo(repo).Root(path).RegisterFileInterceptor(func(f walker.File) error {
+		threadSafeAppend(&filenames, f.Name, &m)
+		return nil
+	}).Walk()
+	if err != nil {
+		return nil, ErrGetFileNames(err)
+	}
+	return filenames, nil
 }

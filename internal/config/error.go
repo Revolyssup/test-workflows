@@ -19,30 +19,27 @@ import (
 )
 
 const (
-	// ErrEmptyConfigCode represents the error when the configuration is either empty
-	// or is invalid
-	ErrEmptyConfigCode = "1029"
-
-	// ErrGetLatestReleasesCode represents the error which occurs during the process of getting
-	// latest releases
-	ErrGetLatestReleasesCode = "1030"
-
-	// ErrGetLatestReleaseNamesCode represents the error which occurs during the process of extracting
-	// release names
-	ErrGetLatestReleaseNamesCode = "1031"
+	ErrEmptyConfigCode           = "1000"
+	ErrGetLatestReleasesCode     = "1001"
+	ErrGetLatestReleaseNamesCode = "1002"
+	ErrGetFileNamesCode          = "1003"
 )
 
 var (
-	// ErrEmptyConfig error is the error when config is invalid
 	ErrEmptyConfig = errors.New(ErrEmptyConfigCode, errors.Alert, []string{"Config is empty"}, []string{}, []string{}, []string{})
 )
 
-// ErrGetLatestReleases is the error for fetching nsm-mesh releases
+// ErrGetLatestReleases is the error for fetching linkerd releases
 func ErrGetLatestReleases(err error) error {
-	return errors.New(ErrGetLatestReleasesCode, errors.Alert, []string{"Unable to fetch release info"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrGetLatestReleasesCode, errors.Alert, []string{"unable to fetch release info"}, []string{err.Error(), "Unable to get the latest release info from the GithubAPI"}, []string{"Checkout https://docs.github.com/en/rest/reference/repos#releases for more info"}, []string{})
 }
 
-// ErrGetLatestReleaseNames is the error for fetching nsm-mesh releases
+// ErrGetLatestReleaseNames is the error for fetching linkerd releases
 func ErrGetLatestReleaseNames(err error) error {
-	return errors.New(ErrGetLatestReleaseNamesCode, errors.Alert, []string{"Failed to extract release names"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrGetLatestReleaseNamesCode, errors.Alert, []string{"failed to extract release names"}, []string{err.Error()}, []string{"Invalid release format"}, []string{})
+}
+
+// ErrGetFileNames is the error for fetching linkerd releases
+func ErrGetFileNames(err error) error {
+	return errors.New(ErrGetFileNamesCode, errors.Alert, []string{"failed to get filenames for dynamic component generation"}, []string{err.Error()}, []string{"The repository could not be cloned or reached", "The repository url is invalid", "Could not reach the remote git repository"}, []string{"Make sure the owner, repo and path is correct for fetching crd names"})
 }

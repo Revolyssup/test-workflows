@@ -1,8 +1,8 @@
-name: TraefikSM
+name: LinkerdSM
 version: 1.0.1
 services:
-  traefik:
-    type: TraefikMesh
-    namespace: traefik
+  linkerd:
+    type: LinkerdMesh
+    namespace: linkerd
     settings:
-      version: 1.4.4 # will be replaced with the latest version in the workflow
+      version: stable-2.10.2 # will be replaced with the latest version in the workflow

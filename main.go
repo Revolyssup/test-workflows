@@ -11,34 +11,30 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"path"
 	"strings"
 	"time"
 
-	"github.com/layer5io/meshery-traefik-mesh/traefik"
-	"github.com/layer5io/meshery-traefik-mesh/traefik/oam"
+	"github.com/layer5io/meshery-linkerd/linkerd"
+	"github.com/layer5io/meshery-linkerd/linkerd/oam"
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/utils/manifests"
-	"gopkg.in/yaml.v2"
 
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
-	"github.com/layer5io/meshery-traefik-mesh/internal/config"
+	"github.com/layer5io/meshery-linkerd/internal/config"
 	configprovider "github.com/layer5io/meshkit/config/provider"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 var (
-	serviceName = "traefik-mesh-adaptor"
+	serviceName = "linkerd-adaptor"
 	version     = "none"
 	gitsha      = "none"
 )
@@ -52,7 +48,7 @@ func init() {
 	}
 }
 
-// main is the entrypoint of the adaptor
+// main is the entrypoint of the adapter
 func main() {
 	// Initialize Logger instance
 	log, err := logger.New(serviceName, logger.Options{
@@ -64,17 +60,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Set $KUBECONFIG environmental variable
+	// crucial when adapter's running within the containers
 	err = os.Setenv("KUBECONFIG", path.Join(
 		config.KubeConfig[configprovider.FilePath],
 		fmt.Sprintf("%s.%s", config.KubeConfig[configprovider.FileName], config.KubeConfig[configprovider.FileType])),
 	)
-
 	if err != nil {
 		// Fail silently
 		log.Warn(err)
 	}
-
-	fmt.Println("HELOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
 
 	// Initialize application specific configs and dependencies
 	// App and request config
@@ -100,12 +95,12 @@ func main() {
 	// // Initialize Tracing instance
 	// tracer, err := tracing.New(service.Name, service.TraceURL)
 	// if err != nil {
-	//      log.Err("Tracing Init Failed", err.Error())
-	//      os.Exit(1)
+	// 	log.Err("Tracing Init Failed", err.Error())
+	// 	os.Exit(1)
 	// }
 
 	// Initialize Handler intance
-	handler := traefik.New(cfg, log, kubeconfigHandler)
+	handler := linkerd.New(cfg, log, kubeconfigHandler)
 	handler = adapter.AddLogger(log, handler)
 
 	service.Handler = handler
@@ -114,12 +109,10 @@ func main() {
 	service.Version = version
 	service.GitSHA = gitsha
 
-	fmt.Println("HELOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
-	go registerCapabilities(service.Port, log)        //Registering static capabilities
-	go registerDynamicCapabilities(service.Port, log) //Registering latest capabilities periodically
-
+	go registerCapabilities(service.Port, log)
+	go registerDynamicCapabilities(service.Port, log)
 	// Server Initialization
-	log.Info("Adaptor Listening at port: ", service.Port)
+	log.Info("Adapter Listening at port: ", service.Port)
 	err = grpc.Start(service, nil)
 	if err != nil {
 		log.Error(err)
@@ -156,16 +149,15 @@ func serviceAddress() string {
 }
 
 func registerCapabilities(port string, log logger.Handler) {
-	log.Info("Registering static capabilities...")
 	// Register workloads
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
+
 	// Register traits
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
-	log.Info("Registeration of static capabilities completed")
 }
 func registerDynamicCapabilities(port string, log logger.Handler) {
 	registerWorkloads(port, log)
@@ -176,69 +168,58 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 		<-ticker.C
 		registerWorkloads(port, log)
 	}
-
 }
 
 func registerWorkloads(port string, log logger.Handler) {
-	appVersion, chartVersion, err := getLatestValidAppVersionAndChartVersion()
+	log.Info("Getting crd names from repository for component generation...")
+	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd2/templates")
 	if err != nil {
-		log.Info(err)
+		log.Error(err)
 		return
 	}
-	log.Info("Registering latest workload components for version ", appVersion, " and chart version ", chartVersion)
-	// Register workloads
-	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
-		TimeoutInMinutes: 60,
-		URL:              "https://helm.traefik.io/traefik/traefik-" + chartVersion + ".tgz",
-		GenerationMethod: adapter.HelmCHARTS,
-		Config: manifests.Config{
-			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_TRAEFIK_MESH)],
-			MeshVersion: appVersion,
-			Filter: manifests.CrdFilter{
-				RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
-				NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
-				VersionFilter: []string{"$[0]..spec.versions[0]"},
-				GroupFilter:   []string{"$[0]..spec"},
-				SpecFilter:    []string{"$[0]..openAPIV3Schema.properties.spec"},
-				ItrFilter:     []string{"$[?(@.spec.names.kind"},
-				ItrSpecFilter: []string{"$[?(@.spec.names.kind"},
-				VField:        "name",
-				GField:        "group",
-			},
-		},
-		Operation: config.TraefikMeshOperation,
-	}); err != nil {
-		log.Info(err.Error())
+	log.Info("CRD names extracted successfully")
+	var crds []string
+	for _, n := range names {
+		if strings.HasSuffix(n, "-crd.yaml") {
+			crds = append(crds, n)
+		}
+	}
+
+	rel, err := config.GetLatestReleases(1)
+	if err != nil {
+		log.Info("Could not get latest version ", err.Error())
 		return
+	}
+	appVersion := rel[0].TagName
+	log.Info("Registering latest workload components for version ", appVersion)
+	// Register workloads
+	for _, manifest := range crds {
+		log.Info("Registering for ", manifest)
+		if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
+			TimeoutInMinutes: 60,
+			URL:              "https://raw.githubusercontent.com/linkerd/linkerd2/main/charts/linkerd2/templates/" + manifest,
+			GenerationMethod: adapter.Manifests,
+			Config: manifests.Config{
+				Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_TRAEFIK_MESH)],
+				MeshVersion: appVersion,
+				Filter: manifests.CrdFilter{
+					RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
+					NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
+					VersionFilter: []string{"$[0]..spec.versions[0]"},
+					GroupFilter:   []string{"$[0]..spec"},
+					SpecFilter:    []string{"$[0]..openAPIV3Schema.properties.spec"},
+					ItrFilter:     []string{"$[?(@.spec.names.kind"},
+					ItrSpecFilter: []string{"$[?(@.spec.names.kind"},
+					VField:        "name",
+					GField:        "group",
+				},
+			},
+			Operation: config.LinkerdOperation,
+		}); err != nil {
+			log.Error(err)
+			return
+		}
+		log.Info(manifest, " registered")
 	}
 	log.Info("Latest workload components successfully registered.")
-}
-
-// returns latest valid appversion and chartversion
-func getLatestValidAppVersionAndChartVersion() (string, string, error) {
-	res, err := http.Get("https://helm.traefik.io/traefik/index.yaml")
-	if err != nil {
-		return "", "", config.ErrGetLatestReleases(err)
-	}
-	content, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return "", "", config.ErrGetLatestReleases(err)
-	}
-	var h helmIndex
-	err = yaml.Unmarshal(content, &h)
-	if err != nil {
-		return "", "", config.ErrGetLatestReleases(err)
-	}
-
-	return h.Entries["traefik"][0].AppVersion, h.Entries["traefik"][0].Version, nil
-}
-
-// Below structs are helper structs to unmarshall and extract certain fields from helm chart's index.yaml
-type helmIndex struct {
-	Entries map[string][]data `yaml:"entries"`
-}
-
-type data struct {
-	AppVersion string `yaml:"appVersion"`
-	Version    string `yaml:"version"`
 }

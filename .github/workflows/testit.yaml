@@ -19,7 +19,7 @@ jobs:
         id: gettag
         uses: pozetroninc/github-action-get-latest-release@master
         with:
-          repository: traefik/mesh
+          repository: linkerd/linkerd2
           excludes: prerelease, draft
       - name: Change service mesh version in patternfile
         run: | 
@@ -27,7 +27,7 @@ jobs:
            echo "$version before trim"
            version=${version#"v"} #remove 'v' if its present
            echo "$version after trim"
-           yq e -i '.services.traefik.settings.version="1.4.4"' ./.github/install/deploy.yaml 
+           yq e -i '.services.traefik.settings.version="stable-2.10.2"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
@@ -35,17 +35,17 @@ jobs:
           name: patternfile
           path: ./.github/install/deploy.yaml 
 
-  TestTraefikMesh:
+  TestLinkerd:
     needs: SetPatterfile
     # uses: meshery/meshery/.github/workflows/testadapters.yaml@master
     uses: Revolyssup/test-workflows/.github/workflows/general.yaml@main
 
     with:
-      expected_pods: grafana-core,jaeger,prometheus-core,traefik-mesh-controller,traefik-mesh-proxy
-      expected_pods_namespaces: traefik,traefik,traefik,traefik,traefik
-      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-traefik-mesh-deployment.yaml
-      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-traefik-mesh-service.yaml
-      adapter_name: traefik-mesh
+      expected_pods: linkerd-controller,linkerd-destination,linkerd-identity,linkerd-proxy-injector,linkerd-sp-validator
+      expected_pods_namespaces: linkerd,linkerd,linkerd,linkerd,linkerd
+      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-linkerd-deployment.yaml
+      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-linkerd-service.yaml
+      adapter_name: linkerd
       patternfile_name: deploy.yaml
     secrets:
       token: ${{ secrets.PROVIDER_TOKEN }}
