@@ -27,7 +27,7 @@ jobs:
            echo "$version before trim"
            version=${version#"v"} #remove 'v' if its present
            echo "$version after trim"
-           yq e -i '.services.traefik.settings.version="stable-2.10.2"' ./.github/install/deploy.yaml 
+           yq e -i '.services.linkerd.settings.version="stable-2.10.2"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
