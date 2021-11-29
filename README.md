@@ -1,16 +1,25 @@
-<p style="text-align:center;" align="center"><a href="https://layer5.io/meshery"><img align="center" style="margin-bottom:20px;" src="img/readme/meshery-logo-light-text.svg"  width="70%" /></a><br /><br /></p>
-
-# Meshery Adapter for Traefik Mesh
-
-[![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-maesh.svg)](https://hub.docker.com/r/layer5/meshery-maesh)
-[![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-traefik-mesh)](https://goreportcard.com/report/github.com/layer5io/meshery-traefik-mesh)
-[![Build Status](https://github.com/layer5io/meshery-traefik-mesh/workflows/Meshery-Maesh/badge.svg)](https://github.com/layer5io/meshery-traefik-mesh/actions)
-[![GitHub](https://img.shields.io/github/license/layer5io/meshery-maesh.svg)](LICENSE)
-[![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-traefik-mesh/help%20wanted.svg)](https://github.com/layer5io/meshery-traefik-mesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
+<p style="text-align:center;" align="center"><a href="https://layer5.io/meshery"><img align="center" style="margin-bottom:20px;" src="https://raw.githubusercontent.com/layer5io/meshery-osm/master/img/readme/meshery-logo-light-text.svg"  width="70%" /></a><br /><br /></p>
+ 
+[![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-osm.svg)](https://hub.docker.com/r/layer5/meshery-osm)
+[![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-osm)](https://goreportcard.com/report/github.com/layer5io/meshery-osm)
+[![Build Status](https://github.com/layer5io/meshery-osm/workflows/Meshery%20OSM/badge.svg)](https://github.com/layer5io/meshery-osm/actions)
+[![GitHub](https://img.shields.io/github/license/layer5io/meshery-osm.svg)](LICENSE)
+[![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-osm/help%20wanted.svg)](https://github.com/layer5io/meshery-osm/issues?q=is%3Aopen+is%3Aissue+label%3A"help+wanted")
 [![Website](https://img.shields.io/website/https/layer5.io/meshery.svg)](https://layer5.io/meshery/)
 [![Twitter Follow](https://img.shields.io/twitter/follow/layer5.svg?label=Follow&style=social)](https://twitter.com/intent/follow?screen_name=mesheryio)
 [![Slack](https://img.shields.io/badge/Slack-@layer5.svg?logo=slack)](http://slack.layer5.io)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3564/badge)](https://bestpractices.coreinfrastructure.org/projects/3564)
+
+<h1>Meshery Adapter for Open Service Mesh</h1>
+<h2><a href="https://meshery.layer5.io/docs">Open Service Mesh</a></h2>
+<a href="https://openservicemesh.io">
+ <img src="img/readme/osm.svg" style="margin:10px;" width="125px" 
+   alt="Open Service Mesh" align="left" />
+</a>
+<p>
+<a href="https://openservicemesh.io">Open Service Mesh</a> (OSM) is a lightweight and extensible cloud native service mesh.
+ <br /> <br /> <br /> <br /> <br />
+</p>
 
 <p style="clear:both;">
 <h2><a href="https://layer5.io/meshery">Meshery</a></h2>
@@ -22,16 +31,6 @@ alt="Meshery - the Service Mesh Management Plane" align="left" /></a>
 </p>
 
 <p style="clear:both;">
-<h2><a href="https://traefik.io/traefik-mesh/">Traefik Mesh</a></h2>
-<a href="https://traefik.io/traefik-mesh/"><img src="img/readme/traefik.svg"
-style="margin:10px;" height="125px" width="140px" 
-alt="Traefik Mesh - Simpler Service Mesh" align="left" /></a>
-<p>
-<a href="https://traefik.io/traefik-mesh/">Traefik Mesh</a> is a straight-forward, easy to configure, and non-invasive service mesh that allows visibility and management of the traffic flows inside any Kubernetes cluster.</p>
-<br /><br />
-</p>
-
-<p style="clear:both;">
 <h2><a name="contributing"></a><a name="community"></a> <a href="http://slack.layer5.io">Community</a> and <a href="https://github.com/layer5io/layer5/blob/master/CONTRIBUTING.md">Contributing</a></h2>
 Our projects are community-built and welcome collaboration. 👍 Be sure to see the <a href="https://docs.google.com/document/d/17OPtDE_rdnPQxmk2Kauhm3GwXF1R5dZ3Cj8qZLKdo5E/edit">Layer5 Community Welcome Guide</a> for a tour of resources available to you and jump into our <a href="http://slack.layer5.io">Slack</a>! Contributors are expected to adhere to the <a href="https://github.com/cncf/foundation/blob/master/code-of-conduct.md">CNCF Code of Conduct</a>.
 
@@ -40,9 +39,9 @@ Our projects are community-built and welcome collaboration. 👍 Be sure to see 
 <a href="http://slack.layer5.io"><img alt="Layer5 Service Mesh Community" src="img/readme/community.svg" style="margin-right:8px;padding-top:5px;" width="140px" align="left" /></a>
 
 <p>
-✔️ <em><strong>Join</strong></em> <a href="https://drive.google.com/open?id=1c07UO9dS7_tFD-ClCWHIrEzRnzUJoFQ10EzfJTpS7FY">weekly community meeting</a> on <a href="https://bit.ly/2SbrRhe">Fridays from 10am - 11am Central</a>.<br />
+✔️ <em><strong>Join</strong></em> any or all of the weekly meetings on the <a href="https://calendar.google.com/calendar/b/1?cid=bGF5ZXI1LmlvX2VoMmFhOWRwZjFnNDBlbHZvYzc2MmpucGhzQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20">community calendar</a>.<br />
 ✔️ <em><strong>Watch</strong></em> community <a href="https://www.youtube.com/channel/UCFL1af7_wdnhHXL1InzaMvA?sub_confirmation=1">meeting recordings</a>.<br />
-✔️ <em><strong>Access</strong></em> the <a href="https://drive.google.com/drive/u/4/folders/0ABH8aabN4WAKUk9PVA">Community Drive</a> by completing a community <a href="https://layer5.io/newcomer">Member Form</a>.<br />
+✔️ <em><strong>To Access</strong></em> community drive, fill <a href="https://docs.google.com/forms/d/e/1FAIpQLSdMLeZY6hZ46yYNkoKKV5OM-jCypjbYcqptbUNltEE73EqCjA/viewform">Community Member Form</a>.<br />
 ✔️ <em><strong>Discuss</strong></em> in the <a href="https://discuss.layer5.io">Community Forum</a>.<br />
 </p>
 <p align="center">
@@ -60,3 +59,4 @@ Our projects are community-built and welcome collaboration. 👍 Be sure to see 
 **License**
 
 This repository and site are available as open source under the terms of the [Apache 2.0 License](https://opensource.org/licenses/Apache-2.0).
+

@@ -1,3 +1,17 @@
+// Copyright 2020 Layer5, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package config
 
 import (
@@ -31,7 +45,7 @@ type Asset struct {
 // limited by the "limit" parameter. It filters out all the rc
 // releases and sorts the result lexographically (descending)
 func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
-	releases, err := GetLatestReleases(10)
+	releases, err := GetLatestReleases(30)
 	if err != nil {
 		return []adapter.Version{}, ErrGetLatestReleaseNames(err)
 	}
@@ -64,7 +78,7 @@ func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
 
 // GetLatestReleases fetches the latest releases from the traefik mesh repository
 func GetLatestReleases(releases uint) ([]*Release, error) {
-	releaseAPIURL := "https://api.github.com/repos/traefik/mesh/releases?per_page=" + fmt.Sprint(releases)
+	releaseAPIURL := "https://api.github.com/repos/openservicemesh/osm/releases?per_page=" + fmt.Sprint(releases)
 	// We need a variable url here hence using nosec
 	// #nosec
 	resp, err := http.Get(releaseAPIURL)

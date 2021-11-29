@@ -2,7 +2,6 @@ package config
 
 import (
 	"path"
-	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
@@ -14,60 +13,48 @@ import (
 )
 
 const (
-	// OAM metadata constants
+	// OAM Metadata constants
 	OAMAdapterNameMetadataKey       = "adapter.meshery.io/name"
 	OAMComponentCategoryMetadataKey = "ui.meshery.io/category"
 )
 
 var (
-	// TraefikMeshOperation is the default name for the install
-	// and uninstall commands on the traefik mesh
-	TraefikMeshOperation = strings.ToLower(smp.ServiceMesh_TRAEFIK_MESH.Enum().String())
-
 	configRootPath = path.Join(utils.GetHome(), ".meshery")
 
-	// ServerConfig is the configuration for the gRPC server
-	ServerConfig = map[string]string{
-		"name":     smp.ServiceMesh_TRAEFIK_MESH.Enum().String(),
-		"port":     "10006",
+	ServerDefaults = map[string]string{
+		"name":     smp.ServiceMesh_OPEN_SERVICE_MESH.Enum().String(),
 		"type":     "adapter",
+		"port":     "10009",
 		"traceurl": status.None,
 	}
 
-	// MeshSpec is the spec for the service mesh associated with this adapter
-	MeshSpec = map[string]string{
-		"name":    smp.ServiceMesh_TRAEFIK_MESH.Enum().String(),
-		"status":  status.None,
+	MeshSpecDefaults = map[string]string{
+		"name":    smp.ServiceMesh_OPEN_SERVICE_MESH.Enum().String(),
+		"status":  status.NotInstalled,
 		"version": status.None,
 	}
 
-	// ProviderConfig is the config for the configuration provider
-	ProviderConfig = map[string]string{
+	ProviderConfigDefaults = map[string]string{
 		configprovider.FilePath: configRootPath,
 		configprovider.FileType: "yaml",
-		configprovider.FileName: "traefik-mesh",
+		configprovider.FileName: "osm",
 	}
 
-	// KubeConfig - Controlling the kubeconfig lifecycle with viper
-	KubeConfig = map[string]string{
+	KubeConfigDefaults = map[string]string{
 		configprovider.FilePath: configRootPath,
 		configprovider.FileType: "yaml",
 		configprovider.FileName: "kubeconfig",
 	}
 
-	// Operations represents the set of valid operations that are available
-	// to the adapter
-	Operations = getOperations(common.Operations)
+	OperationsDefaults = getOperations(common.Operations)
 )
 
-// New creates a new config instance
 func New(provider string) (h config.Handler, err error) {
 	opts := configprovider.Options{
 		FilePath: configRootPath,
-		FileName: "traefik",
+		FileName: "osm",
 		FileType: "yaml",
 	}
-	// Config provider
 	switch provider {
 	case configprovider.ViperKey:
 		h, err = configprovider.NewViper(opts)
@@ -82,29 +69,26 @@ func New(provider string) (h config.Handler, err error) {
 	default:
 		return nil, ErrEmptyConfig
 	}
-
-	// Setup Server config
-	if err := h.SetObject(adapter.ServerKey, ServerConfig); err != nil {
+	// Setup server config
+	if err := h.SetObject(adapter.ServerKey, ServerDefaults); err != nil {
 		return nil, err
 	}
 
-	// setup Mesh config
-	if err := h.SetObject(adapter.MeshSpecKey, MeshSpec); err != nil {
+	// Setup mesh config
+	if err := h.SetObject(adapter.MeshSpecKey, MeshSpecDefaults); err != nil {
 		return nil, err
 	}
 
-	// setup Operation Config
-	if err := h.SetObject(adapter.OperationsKey, Operations); err != nil {
+	// Setup Operations Config
+	if err := h.SetObject(adapter.OperationsKey, OperationsDefaults); err != nil {
 		return nil, err
 	}
 
 	return h, nil
 }
 
-// NewKubeconfigBuilder returns a config handler based on the provider
-//
-// Valid prividers are "viper" and "in-mem"
 func NewKubeconfigBuilder(provider string) (config.Handler, error) {
+
 	opts := configprovider.Options{
 		FilePath: configRootPath,
 		FileType: "yaml",
@@ -118,10 +102,10 @@ func NewKubeconfigBuilder(provider string) (config.Handler, error) {
 	case configprovider.InMemKey:
 		return configprovider.NewInMem(opts)
 	}
-	return nil, ErrEmptyConfig
+	return nil, config.ErrEmptyConfig
 }
 
-// RootPath returns the config root path for the adapter
+// RootPath returns the root config path
 func RootPath() string {
 	return configRootPath
 }

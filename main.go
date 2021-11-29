@@ -1,4 +1,4 @@
-// Copyright 2019 Layer5.io
+// Copyright 2020 Layer5, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,115 +16,92 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"path"
 	"strings"
 	"time"
 
-	"github.com/layer5io/meshery-traefik-mesh/traefik"
-	"github.com/layer5io/meshery-traefik-mesh/traefik/oam"
-	"github.com/layer5io/meshkit/logger"
-	"github.com/layer5io/meshkit/utils/manifests"
-	"gopkg.in/yaml.v2"
-
-	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
-	"github.com/layer5io/meshery-traefik-mesh/internal/config"
+	internalconfig "github.com/layer5io/meshery-osm/internal/config"
+	"github.com/layer5io/meshery-osm/osm"
+	"github.com/layer5io/meshery-osm/osm/oam"
 	configprovider "github.com/layer5io/meshkit/config/provider"
+	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/utils"
+	"github.com/layer5io/meshkit/utils/kubernetes"
+	"github.com/layer5io/meshkit/utils/manifests"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 var (
-	serviceName = "traefik-mesh-adaptor"
+	serviceName = "osm-adapter"
 	version     = "none"
 	gitsha      = "none"
 )
 
-func init() {
-	// Create the config path if it doesn't exists as the entire adapter
-	// expects that directory to exists, which may or may not be true
-	if err := os.MkdirAll(path.Join(config.RootPath(), "bin"), 0750); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
-// main is the entrypoint of the adaptor
 func main() {
-	// Initialize Logger instance
-	log, err := logger.New(serviceName, logger.Options{
-		Format:     logger.SyslogLogFormat,
-		DebugLevel: isDebug(),
-	})
+	log, err := logger.New(serviceName, logger.Options{Format: logger.SyslogLogFormat, DebugLevel: displayDebugLogs()})
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Logger Init Failed", err.Error())
 		os.Exit(1)
 	}
 
-	err = os.Setenv("KUBECONFIG", path.Join(
-		config.KubeConfig[configprovider.FilePath],
-		fmt.Sprintf("%s.%s", config.KubeConfig[configprovider.FileName], config.KubeConfig[configprovider.FileType])),
-	)
-
-	if err != nil {
+	if err = os.Setenv("KUBECONFIG", path.Join(
+		internalconfig.KubeConfigDefaults[configprovider.FilePath],
+		fmt.Sprintf("%s.%s", internalconfig.KubeConfigDefaults[configprovider.FileName],
+			internalconfig.KubeConfigDefaults[configprovider.FileType],
+		)),
+	); err != nil {
 		// Fail silently
 		log.Warn(err)
 	}
 
-	// Initialize application specific configs and dependencies
-	// App and request config
-	cfg, err := config.New(configprovider.ViperKey)
+	cfg, err := internalconfig.New(configprovider.ViperKey)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	kubeconfigHandler, err := internalconfig.NewKubeconfigBuilder(configprovider.ViperKey)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
 	}
 
 	service := &grpc.Service{}
-	err = cfg.GetObject(adapter.ServerKey, service)
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
+	_ = cfg.GetObject(adapter.ServerKey, &service)
 
-	kubeconfigHandler, err := config.NewKubeconfigBuilder(configprovider.ViperKey)
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	// // Initialize Tracing instance
-	// tracer, err := tracing.New(service.Name, service.TraceURL)
-	// if err != nil {
-	//      log.Err("Tracing Init Failed", err.Error())
-	//      os.Exit(1)
-	// }
-
-	// Initialize Handler intance
-	handler := traefik.New(cfg, log, kubeconfigHandler)
-	handler = adapter.AddLogger(log, handler)
-
-	service.Handler = handler
-	service.Channel = make(chan interface{}, 10)
+	service.Handler = osm.New(cfg, log, kubeconfigHandler)
+	service.Channel = make(chan interface{}, 100)
 	service.StartedAt = time.Now()
 	service.Version = version
 	service.GitSHA = gitsha
 
 	go registerCapabilities(service.Port, log)        //Registering static capabilities
 	go registerDynamicCapabilities(service.Port, log) //Registering latest capabilities periodically
-
 	// Server Initialization
 	log.Info("Adaptor Listening at port: ", service.Port)
 	err = grpc.Start(service, nil)
 	if err != nil {
-		log.Error(err)
+		log.Error(grpc.ErrGrpcServer(err))
 		os.Exit(1)
 	}
 }
 
-func isDebug() bool {
+// This init function can help adapters create the configuration logic work well, so do not remove it although that's
+// not a good idea.
+func init() {
+	err := os.MkdirAll(path.Join(utils.GetHome(), ".meshery", "bin"), 0750)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
+}
+
+// displayDebugLogs will return true if the "DEBUG" env var
+// is set to "true"
+func displayDebugLogs() bool {
 	return os.Getenv("DEBUG") == "true"
 }
 
@@ -163,6 +140,7 @@ func registerCapabilities(port string, log logger.Handler) {
 		log.Info(err.Error())
 	}
 }
+
 func registerDynamicCapabilities(port string, log logger.Handler) {
 	registerWorkloads(port, log)
 	//Start the ticker
@@ -178,17 +156,17 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 func registerWorkloads(port string, log logger.Handler) {
 	appVersion, chartVersion, err := getLatestValidAppVersionAndChartVersion()
 	if err != nil {
-		log.Info(err)
+		log.Info("Could not get latest version")
 		return
 	}
 	log.Info("Registering latest workload components for version ", appVersion)
 	// Register workloads
 	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
 		TimeoutInMinutes: 60,
-		URL:              "https://helm.traefik.io/traefik/traefik-" + chartVersion + ".tgz",
+		URL:              "https://openservicemesh.github.io/osm/osm-" + chartVersion + ".tgz",
 		GenerationMethod: adapter.HelmCHARTS,
 		Config: manifests.Config{
-			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_TRAEFIK_MESH)],
+			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_OPEN_SERVICE_MESH)],
 			MeshVersion: appVersion,
 			Filter: manifests.CrdFilter{
 				RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
@@ -202,7 +180,7 @@ func registerWorkloads(port string, log logger.Handler) {
 				GField:        "group",
 			},
 		},
-		Operation: config.TraefikMeshOperation,
+		Operation: internalconfig.OSMOperation,
 	}); err != nil {
 		log.Info(err.Error())
 		return
@@ -212,29 +190,16 @@ func registerWorkloads(port string, log logger.Handler) {
 
 // returns latest valid appversion and chartversion
 func getLatestValidAppVersionAndChartVersion() (string, string, error) {
-	res, err := http.Get("https://helm.traefik.io/traefik/index.yaml")
+	release, err := internalconfig.GetLatestReleases(100)
 	if err != nil {
-		return "", "", config.ErrGetLatestReleases(err)
+		return "", "", osm.ErrGetLatestRelease(err)
 	}
-	content, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return "", "", config.ErrGetLatestReleases(err)
+	//loops through latest  app versions untill it finds one which is available in helm chart's index.yaml
+	for _, rel := range release {
+		if chartVersion, err := kubernetes.HelmAppVersionToChartVersion("https://openservicemesh.github.io/osm", "osm", rel.TagName); err == nil {
+			return rel.TagName, chartVersion, nil
+		}
+
 	}
-	var h helmIndex
-	err = yaml.Unmarshal(content, &h)
-	if err != nil {
-		return "", "", config.ErrGetLatestReleases(err)
-	}
-
-	return h.Entries["traefik"][0].AppVersion, h.Entries["traefik"][0].Version, nil
-}
-
-// Below structs are helper structs to unmarshall and extract certain fields from helm chart's index.yaml
-type helmIndex struct {
-	Entries map[string][]data `yaml:"entries"`
-}
-
-type data struct {
-	AppVersion string `yaml:"appVersion"`
-	Version    string `yaml:"version"`
+	return "", "", osm.ErrGetLatestRelease(err)
 }

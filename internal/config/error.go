@@ -21,15 +21,15 @@ import (
 const (
 	// ErrEmptyConfigCode represents the error when the configuration is either empty
 	// or is invalid
-	ErrEmptyConfigCode = "1029"
+	ErrEmptyConfigCode = "1021"
 
 	// ErrGetLatestReleasesCode represents the error which occurs during the process of getting
 	// latest releases
-	ErrGetLatestReleasesCode = "1030"
+	ErrGetLatestReleasesCode = "1022"
 
 	// ErrGetLatestReleaseNamesCode represents the error which occurs during the process of extracting
 	// release names
-	ErrGetLatestReleaseNamesCode = "1031"
+	ErrGetLatestReleaseNamesCode = "1023"
 )
 
 var (
