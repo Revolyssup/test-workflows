@@ -65,7 +65,6 @@ jobs:
             else
               echo '{ "meshery-provider": "None", "token": "" }'  > ~/.meshery/auth.json
             fi
-            echo '{ "meshery-provider": "None", "token": "" }'  > ~/.meshery/auth.json
             cat ~/.meshery/auth.json
         
       # Start meshery server (Assuming that this step will create the meshery namespace)
