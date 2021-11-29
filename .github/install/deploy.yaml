@@ -1,7 +1,7 @@
-name: Linkerd
+name: Kuma
 services:
-  linkerd:
-    type: LinkerdMesh
-    namespace: linkerd
+  kuma:
+    type: KumaMesh
+    namespace: kuma
     settings:
-      version: stable-2.10.2
+      version: #will be inserted dynamically

@@ -5,14 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 )
-
-// cacheCheck is the time in weeks when the releases
-// should be updated grom github release pages
-const cacheCheck = 1
 
 // Release is used to save the release informations
 type Release struct {
@@ -34,44 +29,23 @@ type Asset struct {
 // limited by the "limit" parameter. The first version in the list
 // is always is the latest "stable" version.
 func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
-	releases, err := GetLatestReleases(30)
+	releases, err := GetLatestReleases(uint(limit))
 	if err != nil {
 		return []adapter.Version{}, ErrGetLatestReleaseNames(err)
 	}
 
 	var releaseNames []adapter.Version
-	var latestStable adapter.Version = ""
 
 	for _, r := range releases {
 		releaseNames = append(releaseNames, r.Name)
-		if latestStable == "" && strings.HasPrefix(string(r.Name), "stable") {
-			latestStable = r.Name
-		}
 	}
 
-	// Ensure that limit is always lesser than equal to the total
-	// number of releases
-	if limit > len(releaseNames) {
-		limit = len(releaseNames)
-	}
-
-	result := make([]adapter.Version, limit, limit)
-
-	// Make latest stable as the first name
-	result[0] = latestStable
-	// Add other elements to the list
-	for i := 1; i < limit; i++ {
-		if releaseNames[i-1] != latestStable {
-			result[i] = releaseNames[i-1]
-		}
-	}
-
-	return result, nil
+	return releaseNames, nil
 }
 
-// GetLatestReleases fetches the latest releases from the linkerd repository
+// GetLatestReleases fetches the latest releases from the kuma repository
 func GetLatestReleases(releases uint) ([]*Release, error) {
-	releaseAPIURL := "https://api.github.com/repos/linkerd/linkerd2/releases?per_page=" + fmt.Sprint(releases)
+	releaseAPIURL := "https://api.github.com/repos/kumahq/kuma/releases?per_page=" + fmt.Sprint(releases)
 	// We need a variable url here hence using nosec
 	// #nosec
 	resp, err := http.Get(releaseAPIURL)

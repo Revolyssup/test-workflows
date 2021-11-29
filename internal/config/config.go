@@ -3,7 +3,6 @@ package config
 import (
 	"path"
 	"strings"
-	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
@@ -11,65 +10,32 @@ import (
 	"github.com/layer5io/meshery-adapter-library/status"
 	configprovider "github.com/layer5io/meshkit/config/provider"
 	"github.com/layer5io/meshkit/utils"
-	"github.com/layer5io/meshkit/utils/walker"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 const (
 	Development = "development"
 	Production  = "production"
-
-	AnnotateNamespace = "annotate-namespace"
-	ServicePatchFile  = "service-patch-file"
-	HelmChartURL      = "helm-chart-url"
-
-	// Addons that the adapter supports
-	JaegerAddon       = "jaeger-addon"
-	VizAddon          = "viz-addon"
-	MultiClusterAddon = "multicluster-addon"
-	SMIAddon          = "smi-addon"
 	// OAM Metadata constants
 	OAMAdapterNameMetadataKey       = "adapter.meshery.io/name"
 	OAMComponentCategoryMetadataKey = "ui.meshery.io/category"
 )
 
 var (
-	// LinkerdOperation is the default name for the install
-	// and uninstall commands on the Linkerd
-	LinkerdOperation = strings.ToLower(smp.ServiceMesh_LINKERD.Enum().String())
-
 	configRootPath = path.Join(utils.GetHome(), ".meshery")
-
-	Config = configprovider.Options{
-		FilePath: configRootPath,
-		FileName: "linkerd",
-		FileType: "yaml",
-	}
+	KumaOperation  = strings.ToLower(smp.ServiceMesh_KUMA.Enum().String())
 
 	ServerConfig = map[string]string{
-		"name":     smp.ServiceMesh_LINKERD.Enum().String(),
-		"port":     "10001",
+		"name":     smp.ServiceMesh_KUMA.Enum().String(),
 		"type":     "adapter",
+		"port":     "10007",
 		"traceurl": status.None,
 	}
 
 	MeshSpec = map[string]string{
-		"name":    smp.ServiceMesh_LINKERD.Enum().String(),
+		"name":    smp.ServiceMesh_KUMA.Enum().String(),
 		"status":  status.NotInstalled,
 		"version": status.None,
-	}
-
-	ProviderConfig = map[string]string{
-		configprovider.FilePath: configRootPath,
-		configprovider.FileType: "yaml",
-		configprovider.FileName: "linkerd",
-	}
-
-	// KubeConfig - Controlling the kubeconfig lifecycle with viper
-	KubeConfig = map[string]string{
-		configprovider.FilePath: configRootPath,
-		configprovider.FileType: "yaml",
-		configprovider.FileName: "kubeconfig",
 	}
 
 	Operations = getOperations(common.Operations)
@@ -77,15 +43,21 @@ var (
 
 // New creates a new config instance
 func New(provider string) (h config.Handler, err error) {
+	opts := configprovider.Options{
+		FilePath: configRootPath,
+		FileName: "kuma",
+		FileType: "yaml",
+	}
+
 	// Config provider
 	switch provider {
 	case configprovider.ViperKey:
-		h, err = configprovider.NewViper(Config)
+		h, err = configprovider.NewViper(opts)
 		if err != nil {
 			return nil, err
 		}
 	case configprovider.InMemKey:
-		h, err = configprovider.NewInMem(Config)
+		h, err = configprovider.NewInMem(opts)
 		if err != nil {
 			return nil, err
 		}
@@ -112,6 +84,7 @@ func New(provider string) (h config.Handler, err error) {
 }
 
 func NewKubeconfigBuilder(provider string) (config.Handler, error) {
+
 	opts := configprovider.Options{
 		FilePath: configRootPath,
 		FileType: "yaml",
@@ -125,31 +98,10 @@ func NewKubeconfigBuilder(provider string) (config.Handler, error) {
 	case configprovider.InMemKey:
 		return configprovider.NewInMem(opts)
 	}
-
-	return nil, ErrEmptyConfig
+	return nil, config.ErrEmptyConfig
 }
 
-// RootPath returns the config root path for the adapter
+// RootPath returns the configRootPath
 func RootPath() string {
 	return configRootPath
-}
-func threadSafeAppend(fs *[]string, name string, m *sync.RWMutex) {
-	m.Lock()
-	defer m.Unlock()
-	*fs = append(*fs, name)
-}
-
-// GetFileNames takes the url of a github repo and the path to a directory. Then returns all the filenames from that directory
-func GetFileNames(owner string, repo string, path string) ([]string, error) {
-	g := walker.NewGit()
-	var filenames []string
-	var m sync.RWMutex
-	err := g.Owner(owner).Repo(repo).Root(path).RegisterFileInterceptor(func(f walker.File) error {
-		threadSafeAppend(&filenames, f.Name, &m)
-		return nil
-	}).Walk()
-	if err != nil {
-		return nil, ErrGetFileNames(err)
-	}
-	return filenames, nil
 }
