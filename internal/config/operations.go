@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
-	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/meshes"
 )
 
@@ -13,133 +12,53 @@ var (
 func getOperations(dev adapter.Operations) adapter.Operations {
 	versions, _ := getLatestReleaseNames(3)
 
-	// Add Istio networking resources to sample applications
-	dev[common.BookInfoOperation].Templates = append(dev[common.BookInfoOperation].Templates, "file://templates/bookinfo/gateway.yaml")
-	dev[common.HTTPBinOperation].Templates = append(dev[common.HTTPBinOperation].Templates, "file://templates/httpbin/gateway.yaml")
-	dev[common.ImageHubOperation].Templates = append(dev[common.ImageHubOperation].Templates, "file://templates/imagehub/gateway.yaml")
-	dev[common.EmojiVotoOperation].Templates = append(dev[common.EmojiVotoOperation].Templates, "file://templates/emojivoto/gateway.yaml")
-
-	dev[IstioOperation] = &adapter.Operation{
+	dev[LinkerdOperation] = &adapter.Operation{
 		Type:                 int32(meshes.OpCategory_INSTALL),
-		Description:          "Istio Service Mesh",
+		Description:          "Linkerd Service Mesh",
 		Versions:             versions,
+		Templates:            []adapter.Template{},
 		AdditionalProperties: map[string]string{},
 	}
 
-	dev[LabelNamespace] = &adapter.Operation{
+	dev[AnnotateNamespace] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Automatic Sidecar Injection",
+		Description: "Annotate Namespace",
 	}
-
-	dev[PrometheusAddon] = &adapter.Operation{
-		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Add-on: Prometheus",
-		Templates: []adapter.Template{
-			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml",
-		},
-		AdditionalProperties: map[string]string{
-			ServiceName:      "prometheus",
-			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
-		},
-	}
-
-	dev[GrafanaAddon] = &adapter.Operation{
-		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Add-on: Grafana",
-		Templates: []adapter.Template{
-			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/grafana.yaml",
-		},
-		AdditionalProperties: map[string]string{
-			ServiceName:      "grafana",
-			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
-		},
-	}
-
-	dev[KialiAddon] = &adapter.Operation{
-		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Add-on: Kiali",
-		Templates: []adapter.Template{
-			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/kiali.yaml",
-		},
-		AdditionalProperties: map[string]string{
-			ServiceName:      "kiali",
-			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
-		},
-	}
-
 	dev[JaegerAddon] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Add-on: Jaeger",
-		Templates: []adapter.Template{
-			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/jaeger.yaml",
-		},
 		AdditionalProperties: map[string]string{
-			ServiceName:      "jaeger-collector",
-			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
+			ServiceName:      "jaeger",
+			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-jaeger-2.10.2.tgz",
 		},
 	}
-
-	dev[ZipkinAddon] = &adapter.Operation{
+	dev[VizAddon] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Add-on: Zipkin",
-		Templates: []adapter.Template{
-			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/extras/zipkin.yaml",
-		},
+		Description: "Add-on: Viz",
 		AdditionalProperties: map[string]string{
-			ServiceName:      "zipkin",
-			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
+			ServiceName:      "web",
+			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-viz-2.10.2.tgz",
 		},
 	}
-
-	dev[IstioVetOperation] = &adapter.Operation{
-		Type:        int32(meshes.OpCategory_VALIDATE),
-		Description: "Analyze Running Configuration",
-	}
-
-	dev[EnvoyFilterOperation] = &adapter.Operation{
+	dev[MultiClusterAddon] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Envoy Filter for Image Hub",
-		Versions:    adapter.NoneVersion,
-		Templates: []adapter.Template{
-			"file://templates/imagehub/rate_limit_filter.yaml",
-		},
+		Description: "Add-on: Multi-cluster",
 		AdditionalProperties: map[string]string{
-			ServiceName:     "api-v1",
-			FilterPatchFile: "file://templates/imagehub/filter_patch.json",
+			ServiceName:      "linkerd-gateway",
+			ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL:     "https://helm.linkerd.io/stable/linkerd-multicluster-2.10.2.tgz",
 		},
 	}
-
-	dev[DenyAllPolicyOperation] = &adapter.Operation{
+	dev[SMIAddon] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Policy: Deny-All",
-		Templates: []adapter.Template{
-			"file://templates/policies/denyall.yaml",
+		Description: "Add-on: SMI Addon",
+		AdditionalProperties: map[string]string{
+			// ServiceName:      "linkerd-gateway",
+			// ServicePatchFile: "file://templates/oam/patches/service-loadbalancer.json",
+			HelmChartURL: "https://github.com/linkerd/linkerd-smi/releases/download/v0.1.0/linkerd-smi-0.1.0.tgz",
 		},
 	}
-
-	dev[StrictMTLSPolicyOperation] = &adapter.Operation{
-		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Policy: Strict MTLS",
-		Templates: []adapter.Template{
-			"file://templates/policies/strict.yaml",
-		},
-	}
-
-	dev[MutualMTLSPolicyOperation] = &adapter.Operation{
-		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Policy: Mutual MTLS",
-		Templates: []adapter.Template{
-			"file://templates/policies/mutual.yaml",
-		},
-	}
-
-	dev[DisableMTLSPolicyOperation] = &adapter.Operation{
-		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Policy: Disable MTLS",
-		Templates: []adapter.Template{
-			"file://templates/policies/disable.yaml",
-		},
-	}
-
 	return dev
 }

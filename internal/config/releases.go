@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 )
+
+// cacheCheck is the time in weeks when the releases
+// should be updated grom github release pages
+const cacheCheck = 1
 
 // Release is used to save the release informations
 type Release struct {
@@ -29,44 +31,47 @@ type Asset struct {
 }
 
 // getLatestReleaseNames returns the names of the latest releases
-// limited by the "limit" parameter. It filters out all the alpha
-// rc releases and sorts the result lexographically (descending)
+// limited by the "limit" parameter. The first version in the list
+// is always is the latest "stable" version.
 func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
-	releases, err := GetLatestReleases(20)
+	releases, err := GetLatestReleases(30)
 	if err != nil {
 		return []adapter.Version{}, ErrGetLatestReleaseNames(err)
 	}
 
-	// Filter out the rc and alpha releases
-	result := make([]adapter.Version, limit)
-	r, err := regexp.Compile(`Istio \d+(\.\d+){2,}$`)
-	if err != nil {
-		return []adapter.Version{}, ErrGetLatestReleaseNames(err)
-	}
+	var releaseNames []adapter.Version
+	var latestStable adapter.Version = ""
 
-	for _, release := range releases {
-		releaseStr := string(release.Name)
-		versionStr := strings.Split(releaseStr, " ")[1]
-		if r.MatchString(releaseStr) {
-			result = append(result, adapter.Version(versionStr))
+	for _, r := range releases {
+		releaseNames = append(releaseNames, r.Name)
+		if latestStable == "" && strings.HasPrefix(string(r.Name), "stable") {
+			latestStable = r.Name
 		}
 	}
 
-	// Sort the result
-	sort.Slice(result, func(i, j int) bool {
-		return result[i] > result[j]
-	})
-
-	if limit > len(result) {
-		limit = len(result)
+	// Ensure that limit is always lesser than equal to the total
+	// number of releases
+	if limit > len(releaseNames) {
+		limit = len(releaseNames)
 	}
 
-	return result[:limit], nil
+	result := make([]adapter.Version, limit, limit)
+
+	// Make latest stable as the first name
+	result[0] = latestStable
+	// Add other elements to the list
+	for i := 1; i < limit; i++ {
+		if releaseNames[i-1] != latestStable {
+			result[i] = releaseNames[i-1]
+		}
+	}
+
+	return result, nil
 }
 
-// GetLatestReleases fetches the latest releases from the istio repository
+// GetLatestReleases fetches the latest releases from the linkerd repository
 func GetLatestReleases(releases uint) ([]*Release, error) {
-	releaseAPIURL := "https://api.github.com/repos/istio/istio/releases?per_page=" + fmt.Sprint(releases)
+	releaseAPIURL := "https://api.github.com/repos/linkerd/linkerd2/releases?per_page=" + fmt.Sprint(releases)
 	// We need a variable url here hence using nosec
 	// #nosec
 	resp, err := http.Get(releaseAPIURL)

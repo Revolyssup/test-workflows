@@ -3,6 +3,7 @@ package config
 import (
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
@@ -10,66 +11,50 @@ import (
 	"github.com/layer5io/meshery-adapter-library/status"
 	configprovider "github.com/layer5io/meshkit/config/provider"
 	"github.com/layer5io/meshkit/utils"
+	"github.com/layer5io/meshkit/utils/walker"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 const (
-	// Constants to use in log statements
-	LabelNamespace = "label-namespace"
+	Development = "development"
+	Production  = "production"
 
-	ServicePatchFile = "service-patch-file"
-	CPPatchFile      = "cp-patch-file"
-	ControlPatchFile = "control-patch-file"
-	FilterPatchFile  = "filter-patch-file"
-
-	// Istio vet operation
-	IstioVetOperation = "istio-vet"
-
-	// Configure Envoy filter operation
-	EnvoyFilterOperation = "envoy-filter-operation"
+	AnnotateNamespace = "annotate-namespace"
+	ServicePatchFile  = "service-patch-file"
+	HelmChartURL      = "helm-chart-url"
 
 	// Addons that the adapter supports
-	PrometheusAddon = "prometheus-addon"
-	GrafanaAddon    = "grafana-addon"
-	KialiAddon      = "kiali-addon"
-	JaegerAddon     = "jaeger-addon"
-	ZipkinAddon     = "zipkin-addon"
-
-	// Policies
-	DenyAllPolicyOperation     = "deny-all-policy-operation"
-	StrictMTLSPolicyOperation  = "strict-mtls-policy-operation"
-	MutualMTLSPolicyOperation  = "mutual-mtls-policy-operation"
-	DisableMTLSPolicyOperation = "disable-mtls-policy-operation"
-
+	JaegerAddon       = "jaeger-addon"
+	VizAddon          = "viz-addon"
+	MultiClusterAddon = "multicluster-addon"
+	SMIAddon          = "smi-addon"
 	// OAM Metadata constants
 	OAMAdapterNameMetadataKey       = "adapter.meshery.io/name"
 	OAMComponentCategoryMetadataKey = "ui.meshery.io/category"
 )
 
 var (
-	// IstioMeshOperation is the default name for the install
-	// and uninstall commands on the istio mesh
-	IstioOperation = strings.ToLower(smp.ServiceMesh_ISTIO.Enum().String())
+	// LinkerdOperation is the default name for the install
+	// and uninstall commands on the Linkerd
+	LinkerdOperation = strings.ToLower(smp.ServiceMesh_LINKERD.Enum().String())
 
-	ServerVersion  = status.None
-	ServerGitSHA   = status.None
 	configRootPath = path.Join(utils.GetHome(), ".meshery")
 
 	Config = configprovider.Options{
 		FilePath: configRootPath,
-		FileName: "istio",
+		FileName: "linkerd",
 		FileType: "yaml",
 	}
 
 	ServerConfig = map[string]string{
-		"name":     smp.ServiceMesh_ISTIO.Enum().String(),
+		"name":     smp.ServiceMesh_LINKERD.Enum().String(),
+		"port":     "10001",
 		"type":     "adapter",
-		"port":     "10000",
 		"traceurl": status.None,
 	}
 
 	MeshSpec = map[string]string{
-		"name":    smp.ServiceMesh_ISTIO.Enum().String(),
+		"name":    smp.ServiceMesh_LINKERD.Enum().String(),
 		"status":  status.NotInstalled,
 		"version": status.None,
 	}
@@ -77,7 +62,7 @@ var (
 	ProviderConfig = map[string]string{
 		configprovider.FilePath: configRootPath,
 		configprovider.FileType: "yaml",
-		configprovider.FileName: "istio",
+		configprovider.FileName: "linkerd",
 	}
 
 	// KubeConfig - Controlling the kubeconfig lifecycle with viper
@@ -140,10 +125,31 @@ func NewKubeconfigBuilder(provider string) (config.Handler, error) {
 	case configprovider.InMemKey:
 		return configprovider.NewInMem(opts)
 	}
+
 	return nil, ErrEmptyConfig
 }
 
 // RootPath returns the config root path for the adapter
 func RootPath() string {
 	return configRootPath
+}
+func threadSafeAppend(fs *[]string, name string, m *sync.RWMutex) {
+	m.Lock()
+	defer m.Unlock()
+	*fs = append(*fs, name)
+}
+
+// GetFileNames takes the url of a github repo and the path to a directory. Then returns all the filenames from that directory
+func GetFileNames(owner string, repo string, path string) ([]string, error) {
+	g := walker.NewGit()
+	var filenames []string
+	var m sync.RWMutex
+	err := g.Owner(owner).Repo(repo).Root(path).RegisterFileInterceptor(func(f walker.File) error {
+		threadSafeAppend(&filenames, f.Name, &m)
+		return nil
+	}).Walk()
+	if err != nil {
+		return nil, ErrGetFileNames(err)
+	}
+	return filenames, nil
 }

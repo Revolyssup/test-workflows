@@ -1,6 +1,11 @@
-check:
+GOPATH = $(shell go env GOPATH)
+
+check: error
 	golangci-lint run
 
+check-clean-cache:
+	golangci-lint cache clean
+	
 protoc-setup:
 	cd meshes
 	wget https://raw.githubusercontent.com/layer5io/meshery/master/meshes/meshops.proto
@@ -9,24 +14,35 @@ proto:
 	protoc -I meshes/ meshes/meshops.proto --go_out=plugins=grpc:./meshes/
 
 docker:
-	DOCKER_BUILDKIT=1 docker build -t layer5/meshery-istio .
+	docker build -t layer5/meshery-linkerd .
 
 docker-run:
-	(docker rm -f meshery-istio) || true
-	docker run --name meshery-istio -d \
-	-p 10000:10000 \
+	(docker rm -f meshery-linkerd) || true
+	docker run --name meshery-linkerd -d \
+	-p 10001:10001 \
 	-e DEBUG=true \
-	layer5/meshery-istio:edge-latest
+	layer5/meshery-linkerd
 
 run:
-	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
+	DEBUG=true go run main.go
 
+.PHONY: error
 error:
 	go run github.com/layer5io/meshkit/cmd/errorutil -d . analyze -i ./helpers -o ./helpers
 
-test:
-	export CURRENTCONTEXT="$(kubectl config current-context)" 
-	echo "current-context:" ${CURRENTCONTEXT} 
-	export KUBECONFIG="${HOME}/.kube/config"
-	echo "environment-kubeconfig:" ${KUBECONFIG}
-	GOPROXY=direct GOSUMDB=off GO111MODULE=on go test -v ./...
+.PHONY: local-check
+local-check: tidy
+local-check: golangci-lint
+
+.PHONY: tidy
+tidy:
+	@echo "Executing go mod tidy"
+	go mod tidy
+
+.PHONY: golangci-lint
+golangci-lint: $(GOLANGCILINT)
+	@echo
+	$(GOPATH)/bin/golangci-lint run
+
+$(GOLANGCILINT):
+	(cd /; GO111MODULE=on GOPROXY="direct" GOSUMDB=off go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.30.0)
