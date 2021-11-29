@@ -5,4 +5,3 @@ services:
     namespace: istio-system
     settings:
       version: 1.9.7
-
