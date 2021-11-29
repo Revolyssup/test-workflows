@@ -1,4 +1,4 @@
-name: Test Istio Adapter
+name: Test NginxSM Adapter
 
 on:
   push:
@@ -19,12 +19,12 @@ jobs:
         id: gettag
         uses: pozetroninc/github-action-get-latest-release@master
         with:
-          repository: kumahq/kuma
+          repository: traefik/mesh
           excludes: prerelease, draft
       - name: Change service mesh version in patternfile
         run: | 
            
-           yq e -i '.services.kuma.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
+           yq e -i '.services.traefik.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
@@ -32,15 +32,15 @@ jobs:
           name: patternfile
           path: ./.github/install/deploy.yaml 
 
-  TestKuma:
+  TestTraefik:
     needs: SetPatterfile
     uses: meshery/meshery/.github/workflows/testadapters.yaml@master
     with:
-      expected_pods: kuma-control-plane
-      expected_pods_namespaces: kuma
-      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-kuma-deployment.yaml
-      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-kuma-service.yaml
-      adapter_name: kuma
+      expected_pods: grafana-core,jaeger,prometheus-core,traefik-mesh-controller,traefik-mesh-proxy
+      expected_pods_namespaces: traefik,traefik,traefik,traefik,traefik
+      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-traefik-mesh-deployment.yaml
+      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-traefik-mesh-service.yaml
+      adapter_name: traefik
       patternfile_name: deploy.yaml
       provider: Local
     secrets:

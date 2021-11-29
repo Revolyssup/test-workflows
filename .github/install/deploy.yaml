@@ -1,7 +1,7 @@
-name: Kuma
+name: TraefikMesh
 services:
-  kuma:
-    type: KumaMesh
-    namespace: kuma
+  traefik:
+    type: TraefikMesh
+    namespace: traefik
     settings:
-      version: #will be inserted dynamically
+      version:  #will be inserted dynamically

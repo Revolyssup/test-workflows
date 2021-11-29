@@ -1,4 +1,4 @@
-FROM golang:1.13 as builder
+FROM golang:1.15 as builder
 
 ARG VERSION
 ARG GIT_COMMITSHA
@@ -12,9 +12,9 @@ RUN GOPROXY=https://proxy.golang.org,direct go mod download
 # Copy the go source
 COPY main.go main.go
 COPY internal/ internal/
-COPY kuma/ kuma/
+COPY traefik/ traefik/
 # Build
-RUN GOPROXY=https://proxy.golang.org,direct CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-kuma main.go
+RUN GOPROXY=https://proxy.golang.org,direct CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-traefik-mesh main.go
 
 FROM alpine:3.14 as jsonschema-util
 RUN apk add --no-cache curl
@@ -25,12 +25,12 @@ RUN chmod +x /kubeopenapi-jsonschema
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/nodejs:14
-WORKDIR /
 ENV DISTRO="debian"
 ENV GOARCH="amd64"
-ENV SERVICE_ADDR="meshery-kuma"
+ENV SERVICE_ADDR="meshery-traefik-mesh"
 ENV MESHERY_SERVER="http://meshery:9081"
+WORKDIR $HOME/.meshery
 COPY templates/ ./templates
-COPY --from=builder /build/meshery-kuma .
+COPY --from=builder /build/meshery-traefik-mesh .
 COPY --from=jsonschema-util /kubeopenapi-jsonschema /root/.meshery/bin/kubeopenapi-jsonschema
-ENTRYPOINT ["/meshery-kuma"]
+ENTRYPOINT ["./meshery-traefik-mesh"]

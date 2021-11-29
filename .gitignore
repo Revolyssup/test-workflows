@@ -14,8 +14,7 @@
 
 .vscode
 
-.DS_Store
-.idea
+meshery-traefik-mesh
 
 **errorutil_analyze_errors.json
 **errorutil_analyze_summary.json
