@@ -1,7 +1,7 @@
-name: TraefikMesh
+name: OSMMesh
 services:
-  traefik:
-    type: TraefikMesh
-    namespace: traefik
+  osm1:
+    type: OSMMesh
+    namespace: osm
     settings:
       version:  #will be inserted dynamically
