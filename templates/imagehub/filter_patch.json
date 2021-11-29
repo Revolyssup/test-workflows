@@ -1,0 +1,48 @@
+{
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "sidecar.istio.io/userVolumeMount": "[{\"mountPath\":\"/var/lib/imagehub\",\"name\":\"wasm-filter\"}]"
+        }
+      },
+      "spec": {
+        "initContainers": [
+          {
+            "command": [
+              "curl",
+              "-L",
+              "-o",
+              "/var/lib/imagehub/filter.wasm",
+              "https://github.com/layer5io/image-hub/raw/master/rate-limit-filter/pkg/rate_limit_filter_bg.wasm",
+              "&&",
+              "curl",
+              "-L",
+              "-o",
+              "/var/lib/imagehub/filter.json",
+              "https://pastebin.com/raw/ME4Xz5Wf"
+            ],
+            "image": "curlimages/curl",
+            "imagePullPolicy": "Always",
+            "name": "add-wasm",
+            "resources": {},
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "volumeMounts": [
+              {
+                "mountPath": "/var/lib/imagehub",
+                "name": "wasm-filter"
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "emptyDir": {},
+            "name": "wasm-filter"
+          }
+        ]
+      }
+    }
+  }
+}

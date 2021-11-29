@@ -20,21 +20,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/layer5io/meshery-linkerd/linkerd"
-	"github.com/layer5io/meshery-linkerd/linkerd/oam"
+	"github.com/layer5io/meshery-istio/istio"
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/utils/manifests"
+	smp "github.com/layer5io/service-mesh-performance/spec"
 
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
-	"github.com/layer5io/meshery-linkerd/internal/config"
+	"github.com/layer5io/meshery-istio/internal/config"
+	"github.com/layer5io/meshery-istio/istio/oam"
 	configprovider "github.com/layer5io/meshkit/config/provider"
-	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 var (
-	serviceName = "linkerd-adaptor"
+	serviceName = "istio-adaptor"
 	version     = "none"
 	gitsha      = "none"
 )
@@ -48,7 +48,7 @@ func init() {
 	}
 }
 
-// main is the entrypoint of the adapter
+// main is the entrypoint of the adaptor
 func main() {
 	// Initialize Logger instance
 	log, err := logger.New(serviceName, logger.Options{
@@ -60,12 +60,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Set $KUBECONFIG environmental variable
-	// crucial when adapter's running within the containers
 	err = os.Setenv("KUBECONFIG", path.Join(
 		config.KubeConfig[configprovider.FilePath],
 		fmt.Sprintf("%s.%s", config.KubeConfig[configprovider.FileName], config.KubeConfig[configprovider.FileType])),
 	)
+
 	if err != nil {
 		// Fail silently
 		log.Warn(err)
@@ -95,12 +94,12 @@ func main() {
 	// // Initialize Tracing instance
 	// tracer, err := tracing.New(service.Name, service.TraceURL)
 	// if err != nil {
-	// 	log.Err("Tracing Init Failed", err.Error())
-	// 	os.Exit(1)
+	//      log.Err("Tracing Init Failed", err.Error())
+	//      os.Exit(1)
 	// }
 
 	// Initialize Handler intance
-	handler := linkerd.New(cfg, log, kubeconfigHandler)
+	handler := istio.New(cfg, log, kubeconfigHandler)
 	handler = adapter.AddLogger(log, handler)
 
 	service.Handler = handler
@@ -108,11 +107,11 @@ func main() {
 	service.StartedAt = time.Now()
 	service.Version = version
 	service.GitSHA = gitsha
+	go registerCapabilities(service.Port, log)        //Registering static capabilities
+	go registerDynamicCapabilities(service.Port, log) //Registering latest capabilities periodically
 
-	go registerCapabilities(service.Port, log)
-	go registerDynamicCapabilities(service.Port, log)
 	// Server Initialization
-	log.Info("Adapter Listening at port: ", service.Port)
+	log.Info("Adaptor Listening at port: ", service.Port)
 	err = grpc.Start(service, nil)
 	if err != nil {
 		log.Error(err)
@@ -159,6 +158,7 @@ func registerCapabilities(port string, log logger.Handler) {
 		log.Info(err.Error())
 	}
 }
+
 func registerDynamicCapabilities(port string, log logger.Handler) {
 	registerWorkloads(port, log)
 	//Start the ticker
@@ -168,58 +168,40 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 		<-ticker.C
 		registerWorkloads(port, log)
 	}
+
 }
-
 func registerWorkloads(port string, log logger.Handler) {
-	log.Info("Getting crd names from repository for component generation...")
-	names, err := config.GetFileNames("linkerd", "linkerd2", "charts/linkerd2/templates")
+	release, err := config.GetLatestReleases(1)
 	if err != nil {
-		log.Error(err)
+		log.Info("Could not get latest stable release")
 		return
 	}
-	log.Info("CRD names extracted successfully")
-	var crds []string
-	for _, n := range names {
-		if strings.HasSuffix(n, "-crd.yaml") {
-			crds = append(crds, n)
-		}
-	}
-
-	rel, err := config.GetLatestReleases(1)
-	if err != nil {
-		log.Info("Could not get latest version ", err.Error())
-		return
-	}
-	appVersion := rel[0].TagName
-	log.Info("Registering latest workload components for version ", appVersion)
+	version := release[0].TagName
+	log.Info("Registering latest workload components for version ", version)
 	// Register workloads
-	for _, manifest := range crds {
-		log.Info("Registering for ", manifest)
-		if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
-			TimeoutInMinutes: 60,
-			URL:              "https://raw.githubusercontent.com/linkerd/linkerd2/main/charts/linkerd2/templates/" + manifest,
-			GenerationMethod: adapter.Manifests,
-			Config: manifests.Config{
-				Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_TRAEFIK_MESH)],
-				MeshVersion: appVersion,
-				Filter: manifests.CrdFilter{
-					RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
-					NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
-					VersionFilter: []string{"$[0]..spec.versions[0]"},
-					GroupFilter:   []string{"$[0]..spec"},
-					SpecFilter:    []string{"$[0]..openAPIV3Schema.properties.spec"},
-					ItrFilter:     []string{"$[?(@.spec.names.kind"},
-					ItrSpecFilter: []string{"$[?(@.spec.names.kind"},
-					VField:        "name",
-					GField:        "group",
-				},
+	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
+		TimeoutInMinutes: 30,
+		URL:              "https://raw.githubusercontent.com/istio/istio/" + version + "/manifests/charts/base/crds/crd-all.gen.yaml",
+		GenerationMethod: adapter.Manifests,
+		Config: manifests.Config{
+			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_ISTIO)],
+			MeshVersion: version,
+			Filter: manifests.CrdFilter{
+				RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
+				NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
+				VersionFilter: []string{"$[0]..spec.versions[0]"},
+				GroupFilter:   []string{"$[0]..spec"},
+				SpecFilter:    []string{"$[0]..openAPIV3Schema.properties.spec"},
+				ItrFilter:     []string{"$[?(@.spec.names.kind"},
+				ItrSpecFilter: []string{"$[?(@.spec.names.kind"},
+				VField:        "name",
+				GField:        "group",
 			},
-			Operation: config.LinkerdOperation,
-		}); err != nil {
-			log.Error(err)
-			return
-		}
-		log.Info(manifest, " registered")
+		},
+		Operation: config.IstioOperation,
+	}); err != nil {
+		log.Info(err.Error())
+		return
 	}
 	log.Info("Latest workload components successfully registered.")
 }

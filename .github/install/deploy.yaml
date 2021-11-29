@@ -1,8 +1,20 @@
-name: LinkerdSM
-version: 1.0.1
+name: IstioSM
 services:
-  linkerd:
-    type: LinkerdMesh
-    namespace: linkerd
+  ns:
+    type: Namespace.K8s
+    name: test
+  istio:
+    type: IstioMesh
+    namespace: istio-system
     settings:
-      version: stable-2.10.2 # will be replaced with the latest version in the workflow
+      version: 1.9.7
+    traits:
+      mTLS:
+        policy: mutual
+        namespaces:
+          - test
+      automaticSidecarInjection:
+        namespaces:
+          - test
+    dependsOn:
+      - ns

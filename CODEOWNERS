@@ -1,11 +1,3 @@
-# See the OWNERS docs at https://go.k8s.io/owners
-# We can easy let the Github automation to request the reviews from the member list below
-
-approvers:
-- girishranganathan
-- leecalcote
-- aisuko
-reviewers:
-- girishranganathan
-- leecalcote
-- aisuko
+@leecalcote
+@kumarabd
+@girishranganathan

@@ -19,7 +19,7 @@ jobs:
         id: gettag
         uses: pozetroninc/github-action-get-latest-release@master
         with:
-          repository: linkerd/linkerd2
+          repository: istio/istio
           excludes: prerelease, draft
       - name: Change service mesh version in patternfile
         run: | 
@@ -27,7 +27,7 @@ jobs:
            echo "$version before trim"
            version=${version#"v"} #remove 'v' if its present
            echo "$version after trim"
-           yq e -i '.services.linkerd.settings.version="stable-2.10.2"' ./.github/install/deploy.yaml 
+           yq e -i '.services.linkerd.settings.version="1.9.7"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
@@ -38,14 +38,14 @@ jobs:
   TestLinkerd:
     needs: SetPatterfile
     # uses: meshery/meshery/.github/workflows/testadapters.yaml@master
-    uses: Revolyssup/test-workflows/.github/workflows/general.yaml@main
+    uses: meshery/meshery/.github/workflows/testadapters.yaml@master
 
     with:
-      expected_pods: linkerd-controller,linkerd-destination,linkerd-identity,linkerd-proxy-injector,linkerd-sp-validator
-      expected_pods_namespaces: linkerd,linkerd,linkerd,linkerd,linkerd
-      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-linkerd-deployment.yaml
-      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-linkerd-service.yaml
-      adapter_name: linkerd
+      expected_pods: istiod
+      expected_pods_namespaces: istio-system
+      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
+      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
+      adapter_name: istio
       patternfile_name: deploy.yaml
     secrets:
       token: ${{ secrets.PROVIDER_TOKEN }}

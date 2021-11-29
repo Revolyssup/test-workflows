@@ -12,14 +12,17 @@
 *.out
 
 
-meshery-linkerd
-
-log.txt
-
+.vscode
 .idea
 
-**errorutil
+.DS_Store
+
+meshery-istio
+
+main
+
+# Miscellaneous
 **errorutil_analyze_errors.json
 **errorutil_analyze_summary.json
 **errorutil_errors_export.json
-
+**generator.sh
