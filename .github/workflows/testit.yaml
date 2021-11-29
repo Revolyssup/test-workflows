@@ -1,4 +1,4 @@
-name: Test TraefikMesh Adapter
+name: Test Istio Adapter
 
 on:
   push:
@@ -23,11 +23,8 @@ jobs:
           excludes: prerelease, draft
       - name: Change service mesh version in patternfile
         run: | 
-           version="${{ steps.gettag.outputs.release }}"
-           echo "$version before trim"
-           version=${version#"v"} #remove 'v' if its present
-           echo "$version after trim"
-           yq e -i '.services.istio.settings.version="1.9.7"' ./.github/install/deploy.yaml 
+           
+           yq e -i '.services.istio.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
@@ -35,17 +32,15 @@ jobs:
           name: patternfile
           path: ./.github/install/deploy.yaml 
 
-  TestLinkerd:
+  TestIstio:
     needs: SetPatterfile
-    # uses: meshery/meshery/.github/workflows/testadapters.yaml@master
     uses: meshery/meshery/.github/workflows/testadapters.yaml@master
-
     with:
-      expected_pods: istiod
-      expected_pods_namespaces: istio-system
+      expected_pods: istiod,istio-egressgateway,istio-ingressgateway
+      expected_pods_namespaces: istio-system,istio-system,istio-system
       deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
       service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
       adapter_name: istio
       patternfile_name: deploy.yaml
     secrets:
-      token: ${{ secrets.PROVIDER_TOKEN }}
+      token: ${{ secrets.PROVIDER_TOKEN }} 
