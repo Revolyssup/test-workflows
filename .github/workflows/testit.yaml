@@ -19,12 +19,12 @@ jobs:
         id: gettag
         uses: pozetroninc/github-action-get-latest-release@master
         with:
-          repository: istio/istio
+          repository: linkerd/linkerd2
           excludes: prerelease, draft
       - name: Change service mesh version in patternfile
         run: | 
            
-           yq e -i '.services.istio.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
+           yq e -i '.services.linkerd.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
@@ -37,11 +37,11 @@ jobs:
     # uses: meshery/meshery/.github/workflows/testadapters.yaml@master
     uses: Revolyssup/test-workflows/.github/workflows/general.yaml@main
     with:
-      expected_pods: istiod,istio-egressgateway,istio-ingressgateway
-      expected_pods_namespaces: istio-system,istio-system,istio-system
-      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
-      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
-      adapter_name: istio
+      expected_pods: linkerd-proxy-injector,linkerd-identity,linkerd-destination
+      expected_pods_namespaces: linkerd,linkerd,linkerd
+      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-linkerd-deployment.yaml
+      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-linkerd-service.yaml
+      adapter_name: linkerd
       patternfile_name: deploy.yaml
       provider: Local
     secrets:

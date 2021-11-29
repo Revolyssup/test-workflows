@@ -1,7 +1,7 @@
-name: IstioSM
+name: Linkerd
 services:
-  istio:
-    type: IstioMesh
-    namespace: istio-system
+  linkerd:
+    type: LinkerdMesh
+    namespace: linkerd
     settings:
-      version: 1.9.7
+      version: stable-2.10.2
