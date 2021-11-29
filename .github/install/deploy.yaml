@@ -1,20 +1,8 @@
 name: IstioSM
 services:
-  ns:
-    type: Namespace.K8s
-    name: test
   istio:
     type: IstioMesh
     namespace: istio-system
     settings:
       version: 1.9.7
-    traits:
-      mTLS:
-        policy: mutual
-        namespaces:
-          - test
-      automaticSidecarInjection:
-        namespaces:
-          - test
-    dependsOn:
-      - ns
+
