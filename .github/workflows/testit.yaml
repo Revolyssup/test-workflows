@@ -32,10 +32,9 @@ jobs:
           name: patternfile
           path: ./.github/install/deploy.yaml 
 
-  TestIstio:
+  TestKuma:
     needs: SetPatterfile
-    # uses: meshery/meshery/.github/workflows/testadapters.yaml@master
-    uses: Revolyssup/test-workflows/.github/workflows/general.yaml@main
+    uses: meshery/meshery/.github/workflows/testadapters.yaml@master
     with:
       expected_pods: kuma-control-plane
       expected_pods_namespaces: kuma
