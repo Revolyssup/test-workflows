@@ -1,6 +1,6 @@
 name: OSMMesh
 services:
-  osm1:
+  osm:
     type: OSMMesh
     namespace: osm
     settings:
