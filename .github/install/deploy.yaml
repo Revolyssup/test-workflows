@@ -1,7 +1,7 @@
-name: OSMMesh
+name: LinkerdMesh
 services:
-  osm:
-    type: OSMMesh
-    namespace: osm
+  linkerd:
+    type: LinkerdMesh
+    namespace: linkerd
     settings:
-      version:  #will be inserted dynamically
+      version: edge-21.11.4 #will be inserted dynamically
