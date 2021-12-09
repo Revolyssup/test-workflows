@@ -130,6 +130,7 @@ jobs:
       # This pattern will try to install  service mesh
       - name: Pattern apply (Install service mesh)
         run: |
+            cat ./${{ inputs.patternfile_name }}
             mesheryctl pattern apply -f ./${{ inputs.patternfile_name }}
       # Wait for sometime to get some logs
       - name: Sleep for 30 sec
@@ -151,7 +152,7 @@ jobs:
         run: |
           SECONDS=0
           exitstatus=0
-          end=$((SECONDS+300))
+          end=$((SECONDS+10))
           podnames="${{ inputs.expected_pods }}"
           nsnames="${{ inputs.expected_pods_namespaces}}"
           set -f                      
@@ -191,5 +192,5 @@ jobs:
         with:
           name: data.json
           path: ./data.json
-      - name: exit
-        run: exit ${needs.TestAdapter.outputs.exitstatus}
+      # - name: exit
+      #   run: exit ${needs.TestAdapter.outputs.exitstatus}
