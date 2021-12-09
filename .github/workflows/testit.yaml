@@ -67,7 +67,7 @@ jobs:
         run: cat ./data.json
       - name: Create the Markdown
         run: |
-          status= $(cat ./data.json | jq .status)
+          status=$(cat ./data.json | jq .status)
           touch test.md
           echo " 
             ## Test status 
