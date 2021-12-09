@@ -73,7 +73,10 @@ jobs:
           touch test1.md
           echo " 
             ## Test status for Istio
-            ### Status: $(cat ./data.json | jq .pods)
+            ### Status: 
+            ```json
+            $(cat ./data.json | jq .pods)
+            ```
             ### Run on: $(cat ./data.json | jq .runon)
             ### K8sVersion: $(cat ./data.json | jq .k8s_version)
             ### Name: $(cat ./data.json | jq .service_mesh_name)
@@ -85,4 +88,4 @@ jobs:
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: '[Docs] Test status of adapter }}'
+          commit_message: '[Docs] Test status of adapter'
