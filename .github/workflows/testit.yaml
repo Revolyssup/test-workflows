@@ -71,7 +71,7 @@ jobs:
           echo " 
             ## Test status 
             ### $status
-          " | test.md
+          " > test.md
           rm data.json
 
       - name: Commit
