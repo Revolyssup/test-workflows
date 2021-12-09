@@ -71,7 +71,7 @@ jobs:
           echo " 
             ## Test status 
             ### Status: $(cat ./data.json | jq .status)
-            ### Run on: $(cat ./data.json | jq .run-on)
+            ### Run on: $(cat ./data.json | jq .runon)
             ### K8sVersion: $(cat ./data.json | jq .k8s_version)
             ### $(cat ./data.json | jq .service_mesh_name) Version: $(cat ./data.json | jq .service_mesh_version)
           " >  test.md
