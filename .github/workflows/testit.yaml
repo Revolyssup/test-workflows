@@ -26,7 +26,7 @@ jobs:
       - name: Change service mesh version in patternfile
         run: | 
            
-           yq e -i '.services.istio-system.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
+           yq e -i '.services.istio.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
@@ -51,6 +51,7 @@ jobs:
       token: ${{ secrets.PROVIDER_TOKEN }} 
   
   UpdateDocs:
+    if: always()
     needs: TestLinkerd
     runs-on: ubuntu-latest
     steps:

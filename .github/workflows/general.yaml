@@ -192,5 +192,5 @@ jobs:
         with:
           name: data.json
           path: ./data.json
-      # - name: exit
-      #   run: exit ${needs.TestAdapter.outputs.exitstatus}
+      - name: exit
+        run: exit ${needs.TestAdapter.outputs.exitstatus}
