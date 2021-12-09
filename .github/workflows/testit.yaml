@@ -67,15 +67,15 @@ jobs:
         run: cat ./data.json
       - name: Create the Markdown
         run: |
-          touch test.md
+          touch test1.md
           echo " 
             ## Test status 
             ### Status: $(cat ./data.json | jq .status)
             ### Run on: $(cat ./data.json | jq .runon)
             ### K8sVersion: $(cat ./data.json | jq .k8s_version)
             ### $(cat ./data.json | jq .service_mesh_name) Version: $(cat ./data.json | jq .service_mesh_version)
-          " >  test.md
-          cat test.md
+          " >  test1.md
+          cat test1.md
           rm data.json
 
       - name: Commit
