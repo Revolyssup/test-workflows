@@ -65,7 +65,7 @@ jobs:
           name: data.json
       - name: echo results
         run: |
-          echo $(jq ./data.json) > data.json
+          echo $(echo ./data.json | jq ) > data.json
           cat data.json
       - name: Create the Markdown
         run: |
@@ -76,7 +76,7 @@ jobs:
             ### Run on: $(cat ./data.json | jq .runon)
             ### K8sVersion: $(cat ./data.json | jq .k8s_version)
             ### Name: $(cat ./data.json | jq .service_mesh_name)
-            ### Version: $(cat ./data.json | jq .service_mesh_version)
+            ### Mesh Version: $(cat ./data.json | jq .service_mesh_version)
           " >  test1.md
           cat test1.md
           rm data.json
