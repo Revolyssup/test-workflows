@@ -183,8 +183,14 @@ jobs:
               exitstatus=1
             fi
           done
+          status=""
+          if [ "$exitstatus" -eq 1 ];then
+              status="Failing"
+          else 
+              status="Passing"
+          fi
           touch data.json
-          echo testing > ./data.json
+          echo '{"k8s_version":"'${{ needs.TestAdapter.outputs.k8s_version }}'", "service_mesh_name":"'{{ inputs.adapter_name }}'", "service_mesh_version":"'${{ needs.TestAdapter.outputs.sm_version  }}'", "status":"'$status'" }' | jq > ./data.json
           echo "::set-output name=exitstatus::$exitstatus"
 
       - name: UploadResults
