@@ -174,16 +174,16 @@ jobs:
           touch data.json
           runon=$date
           echo "Ran on $runon"
-          echo '{"k8s_version":"'${{ inputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'", "status":"'$status'" ,"runon":"'$runon'", "pods":[]}' | jq > ./data.json
+          echo '{"k8s_version":"'${{ inputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'", "status":"'$status'" ,"runon":"'$runon'", "pods":{}}' | jq > ./data.json
           for i in "${!pods[@]}"
           do
             podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
             if [ "$podstatus" = "Running" ];then
               echo "Pod ${pods[i]} started in namespace  ${ns[i]}"
-              jq -i '.pods[] += { "${pods[i]}" : "Running" }' data.json > data.json
+              jq '.pods"${pods[i]}" =  "Running" }' data.json > data.json
             else
               echo "Pod ${pods[i]} did not start in namespace ${ns[i]} "
-              jq -i '.pods[] += { "${pods[i]}" : "Not Running" }' data.json > data.json
+              jq '.pods[] += { "${pods[i]}" : "Not Running" }' data.json > data.json
               exitstatus=1
             fi
           done
