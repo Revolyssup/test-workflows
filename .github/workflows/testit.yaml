@@ -57,7 +57,8 @@ jobs:
     steps:
       - uses: actions/checkout@master
         with:
-          repository: Revolyssup/oongaboongawf     
+          repository: Revolyssup/oongaboongawf  
+          token: ${{ secrets.TOKEN }}   
       - name: DownloadJSON
         uses: actions/download-artifact@v2
         with:
