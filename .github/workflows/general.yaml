@@ -199,7 +199,7 @@ jobs:
           path: ./data.json
       - name: exit
         run: |
-          status=${{ needs.TestAdapter.outputs.exitstatus}}
+          status="${{ needs.TestAdapter.outputs.exitstatus}}"
           if [ "$status" = "Passing" ];then
               exit 0
           fi

@@ -57,7 +57,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
         with:
-          name: Revolyssup/oongaboongawf     
+          repository: Revolyssup/oongaboongawf     
           ref: refs/heads/release
       - name: DownloadJSON
         uses: actions/download-artifact@v2
