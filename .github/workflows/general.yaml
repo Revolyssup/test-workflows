@@ -188,7 +188,7 @@ jobs:
               status="Passing"
           fi
           touch data.json
-          echo '{"k8s_version":"'${{ inputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'", "status":"'$status'" },"run-on":"$date"' | jq > ./data.json
+          echo '{"k8s_version":"'${{ inputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'", "status":"'$status'" ,"run-on":"$date"}' | jq > ./data.json
           echo "::set-output name=exitstatus::$status"
 
       - name: UploadResults
