@@ -1,7 +1,24 @@
-name: LinkerdMesh
+name: IstioSM
+version: 1.0.1
 services:
-  linkerd:
-    type: LinkerdMesh
-    namespace: linkerd
+  istio:
+    type: IstioMesh
+    namespace: istio-system
     settings:
-      version: edge-21.11.4 #will be inserted dynamically
+      version: 1.9.1
+    traits:
+      automaticSidecarInjection:
+        namespaces:
+          - default
+  grafana:
+    type: GrafanaIstioAddon
+    namespace: istio-system
+    dependsOn:
+      - istio
+      - prometheus
+​
+  prometheus:
+    type: PrometheusIstioAddon
+    namespace: istio-system
+    dependsOn:
+      - istio
