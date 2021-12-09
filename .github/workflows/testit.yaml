@@ -64,7 +64,7 @@ jobs:
         with:
           name: data.json
       - name: echo results
-        run: cat ./data.json
+        run: cat jq ./data.json
       - name: Create the Markdown
         run: |
           touch test1.md
@@ -73,7 +73,8 @@ jobs:
             ### Status: $(cat ./data.json | jq .pods)
             ### Run on: $(cat ./data.json | jq .runon)
             ### K8sVersion: $(cat ./data.json | jq .k8s_version)
-            ### $(cat ./data.json | jq .service_mesh_name) Version: $(cat ./data.json | jq .service_mesh_version)
+            ### Name: $(cat ./data.json | jq .service_mesh_name)
+            ### Version: $(cat ./data.json | jq .service_mesh_version)
           " >  test1.md
           cat test1.md
           rm data.json
