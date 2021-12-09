@@ -178,10 +178,10 @@ jobs:
             podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
             if [ "$podstatus" = "Running" ];then
               echo "Pod ${pods[i]} started in namespace  ${ns[i]}"
-              jq '.podstatus.${pods[i]} = "Running"' data.json
+              jq '.podstatus."${pods[i]}" = "Running"' data.json
             else
               echo "Pod ${pods[i]} did not start in namespace ${ns[i]} "
-              jq '.podstatus.${pods[i]} = "Not Running"' data.json
+              jq '.podstatus."${pods[i]}" = "Not Running"' data.json
               exitstatus=1
             fi
           done
