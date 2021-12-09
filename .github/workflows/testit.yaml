@@ -67,11 +67,13 @@ jobs:
         run: cat ./data.json
       - name: Create the Markdown
         run: |
-          status=$(cat ./data.json | jq .status)
           touch test.md
           echo " 
             ## Test status 
-            ### Status: '$status'
+            ### Status: $(cat ./data.json | jq .status)
+            ### Run on: $(cat ./data.json | jq .run-on)
+            ### K8sVersion: $(cat ./data.json | jq .k8s_version)
+            ### $(cat ./data.json | jq .service_mesh_name) Version: $(cat ./data.json | jq .service_mesh_version)
           " >  test.md
           cat test.md
           rm data.json
@@ -79,10 +81,10 @@ jobs:
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          # file_pattern: docs
-          # commit_user_name: l5io
-          # commit_user_email: ci@layer5.io
-          # commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-          # commit_options: '--signoff'
+          file_pattern: docs
+          commit_user_name: l5io
+          commit_user_email: ci@layer5.io
+          commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          commit_options: '--signoff'
           commit_message: '[Docs] Test status of adapter }}'
-          # branch: master
+          branch: master
