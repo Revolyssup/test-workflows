@@ -200,7 +200,8 @@ jobs:
       - name: exit
         run: |
           status="${{ needs.TestAdapter.outputs.exitstatus}}"
-          if [ "$status" = "Passing" ];then
-              exit 0
-          fi
+          echo "${{ needs.TestAdapter.outputs.exitstatus}}"
+          # if [ "$status" = "Passing" ];then
+          #     exit 0
+          # fi
           exit 1

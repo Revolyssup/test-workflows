@@ -58,7 +58,6 @@ jobs:
       - uses: actions/checkout@master
         with:
           repository: Revolyssup/oongaboongawf     
-          ref: refs/heads/release
       - name: DownloadJSON
         uses: actions/download-artifact@v2
         with:
