@@ -1,8 +1,12 @@
-name: LinkerdSM
+name: IstioSM
 version: 1.0.1
 services:
-  ld:
-    type: LinkerdMesh
-    namespace: linkerd
+  istio:
+    type: IstioMesh
+    namespace: istio-system
     settings:
       version: 1.9.1
+    traits:
+      automaticSidecarInjection:
+        namespaces:
+          - default

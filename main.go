@@ -1,4 +1,4 @@
-// Copyright 2020 Layer5, Inc.
+// Copyright 2019 Layer5.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 package main
 
 import (
@@ -21,87 +20,107 @@ import (
 	"strings"
 	"time"
 
-	"github.com/layer5io/meshery-adapter-library/adapter"
-	"github.com/layer5io/meshery-adapter-library/api/grpc"
-	internalconfig "github.com/layer5io/meshery-osm/internal/config"
-	"github.com/layer5io/meshery-osm/osm"
-	"github.com/layer5io/meshery-osm/osm/oam"
-	configprovider "github.com/layer5io/meshkit/config/provider"
+	"github.com/layer5io/meshery-istio/istio"
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/utils"
-	"github.com/layer5io/meshkit/utils/kubernetes"
 	"github.com/layer5io/meshkit/utils/manifests"
 	smp "github.com/layer5io/service-mesh-performance/spec"
+
+	// "github.com/layer5io/meshkit/tracing"
+	"github.com/layer5io/meshery-adapter-library/adapter"
+	"github.com/layer5io/meshery-adapter-library/api/grpc"
+	"github.com/layer5io/meshery-istio/internal/config"
+	"github.com/layer5io/meshery-istio/istio/oam"
+	configprovider "github.com/layer5io/meshkit/config/provider"
 )
 
 var (
-	serviceName = "osm-adapter"
+	serviceName = "istio-adaptor"
 	version     = "none"
 	gitsha      = "none"
 )
 
+func init() {
+	// Create the config path if it doesn't exists as the entire adapter
+	// expects that directory to exists, which may or may not be true
+	if err := os.MkdirAll(path.Join(config.RootPath(), "bin"), 0750); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+// main is the entrypoint of the adaptor
 func main() {
-	log, err := logger.New(serviceName, logger.Options{Format: logger.SyslogLogFormat, DebugLevel: displayDebugLogs()})
+	// Initialize Logger instance
+	log, err := logger.New(serviceName, logger.Options{
+		Format:     logger.SyslogLogFormat,
+		DebugLevel: isDebug(),
+	})
 	if err != nil {
-		fmt.Println("Logger Init Failed", err.Error())
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	if err = os.Setenv("KUBECONFIG", path.Join(
-		internalconfig.KubeConfigDefaults[configprovider.FilePath],
-		fmt.Sprintf("%s.%s", internalconfig.KubeConfigDefaults[configprovider.FileName],
-			internalconfig.KubeConfigDefaults[configprovider.FileType],
-		)),
-	); err != nil {
+	err = os.Setenv("KUBECONFIG", path.Join(
+		config.KubeConfig[configprovider.FilePath],
+		fmt.Sprintf("%s.%s", config.KubeConfig[configprovider.FileName], config.KubeConfig[configprovider.FileType])),
+	)
+
+	if err != nil {
 		// Fail silently
 		log.Warn(err)
 	}
 
-	cfg, err := internalconfig.New(configprovider.ViperKey)
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	kubeconfigHandler, err := internalconfig.NewKubeconfigBuilder(configprovider.ViperKey)
+	// Initialize application specific configs and dependencies
+	// App and request config
+	cfg, err := config.New(configprovider.ViperKey)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
 	}
 
 	service := &grpc.Service{}
-	_ = cfg.GetObject(adapter.ServerKey, &service)
+	err = cfg.GetObject(adapter.ServerKey, service)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
 
-	service.Handler = osm.New(cfg, log, kubeconfigHandler)
-	service.Channel = make(chan interface{}, 100)
+	kubeconfigHandler, err := config.NewKubeconfigBuilder(configprovider.ViperKey)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	// // Initialize Tracing instance
+	// tracer, err := tracing.New(service.Name, service.TraceURL)
+	// if err != nil {
+	//      log.Err("Tracing Init Failed", err.Error())
+	//      os.Exit(1)
+	// }
+
+	// Initialize Handler intance
+	handler := istio.New(cfg, log, kubeconfigHandler)
+	handler = adapter.AddLogger(log, handler)
+
+	service.Handler = handler
+	service.Channel = make(chan interface{}, 10)
 	service.StartedAt = time.Now()
 	service.Version = version
 	service.GitSHA = gitsha
-
 	go registerCapabilities(service.Port, log)        //Registering static capabilities
 	go registerDynamicCapabilities(service.Port, log) //Registering latest capabilities periodically
+
 	// Server Initialization
 	log.Info("Adaptor Listening at port: ", service.Port)
 	err = grpc.Start(service, nil)
 	if err != nil {
-		log.Error(grpc.ErrGrpcServer(err))
+		log.Error(err)
 		os.Exit(1)
 	}
 }
 
-// This init function can help adapters create the configuration logic work well, so do not remove it although that's
-// not a good idea.
-func init() {
-	err := os.MkdirAll(path.Join(utils.GetHome(), ".meshery", "bin"), 0750)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
-}
-
-// displayDebugLogs will return true if the "DEBUG" env var
-// is set to "true"
-func displayDebugLogs() bool {
+func isDebug() bool {
 	return os.Getenv("DEBUG") == "true"
 }
 
@@ -131,10 +150,11 @@ func serviceAddress() string {
 
 func registerCapabilities(port string, log logger.Handler) {
 	// Register workloads
+	log.Info("Registering static workloads...")
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
-
+	log.Info("Registering static workloads completed")
 	// Register traits
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
@@ -152,22 +172,43 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 	}
 
 }
-
 func registerWorkloads(port string, log logger.Handler) {
-	appVersion, chartVersion, err := getLatestValidAppVersionAndChartVersion()
+	var url string
+	var gm string
+	// Prechecking to skip comp gen
+	version, err := utils.GetLatestReleaseTag("istio", "istio")
 	if err != nil {
-		log.Info("Could not get latest version")
+		log.Info("Could not get latest stable release")
 		return
 	}
-	log.Info("Registering latest workload components for version ", appVersion)
+	if os.Getenv("FORCE_DYNAMIC_REG") != "true" && oam.AvailableVersions[version] {
+		log.Info("Components available statically for version ", version, ". Skipping dynamic component registeration")
+		return
+	}
+	//If a URL is passed from env variable, it will be used for component generation with default method being "using manifests"
+	// In case a helm chart URL is passed, COMP_GEN_METHOD env variable should be set to Helm otherwise the component generation fails
+	if os.Getenv("COMP_GEN_URL") != "" {
+		url = os.Getenv("COMP_GEN_URL")
+		if os.Getenv("COMP_GEN_METHOD") == "Helm" || os.Getenv("COMP_GEN_METHOD") == "Manifest" {
+			gm = os.Getenv("COMP_GEN_METHOD")
+		} else {
+			gm = adapter.Manifests
+		}
+		log.Info("Registering workload components from url ", url, " using ", gm, " method...")
+	} else {
+		log.Info("Registering latest workload components for version ", version)
+		//default way
+		url = "https://raw.githubusercontent.com/istio/istio/" + version + "/manifests/charts/base/crds/crd-all.gen.yaml"
+		gm = adapter.Manifests
+	}
 	// Register workloads
 	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
-		TimeoutInMinutes: 60,
-		URL:              "https://openservicemesh.github.io/osm/osm-" + chartVersion + ".tgz",
-		GenerationMethod: adapter.HelmCHARTS,
+		TimeoutInMinutes: 30,
+		URL:              url,
+		GenerationMethod: gm,
 		Config: manifests.Config{
-			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_OPEN_SERVICE_MESH)],
-			MeshVersion: appVersion,
+			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_ISTIO)],
+			MeshVersion: version,
 			Filter: manifests.CrdFilter{
 				RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
 				NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
@@ -180,26 +221,10 @@ func registerWorkloads(port string, log logger.Handler) {
 				GField:        "group",
 			},
 		},
-		Operation: internalconfig.OSMOperation,
+		Operation: config.IstioOperation,
 	}); err != nil {
 		log.Info(err.Error())
 		return
 	}
 	log.Info("Latest workload components successfully registered.")
-}
-
-// returns latest valid appversion and chartversion
-func getLatestValidAppVersionAndChartVersion() (string, string, error) {
-	release, err := internalconfig.GetLatestReleases(100)
-	if err != nil {
-		return "", "", osm.ErrGetLatestRelease(err)
-	}
-	//loops through latest  app versions untill it finds one which is available in helm chart's index.yaml
-	for _, rel := range release {
-		if chartVersion, err := kubernetes.HelmAppVersionToChartVersion("https://openservicemesh.github.io/osm", "osm", rel.TagName); err == nil {
-			return rel.TagName, chartVersion, nil
-		}
-
-	}
-	return "", "", osm.ErrGetLatestRelease(err)
 }

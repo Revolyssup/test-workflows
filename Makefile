@@ -1,70 +1,34 @@
-
-GOPATH = $(shell go env GOPATH)
+check:
+	golangci-lint run
 
 protoc-setup:
 	cd meshes
 	wget https://raw.githubusercontent.com/layer5io/meshery/master/meshes/meshops.proto
 
-check: error
-	golangci-lint run
-
-check-clean-cache:
-	golangci-lint cache clean
-
 proto:	
 	protoc -I meshes/ meshes/meshops.proto --go_out=plugins=grpc:./meshes/
 
 docker:
-	docker build -t layer5/meshery-osm .
+	DOCKER_BUILDKIT=1 docker build -t layer5/meshery-istio .
 
 docker-run:
-	(docker rm -f meshery-osm) || true
-	docker run --name meshery-osm -d \
-	-p 10009:10009 \
+	(docker rm -f meshery-istio) || true
+	docker run --name meshery-istio -d \
+	-p 10000:10000 \
 	-e DEBUG=true \
-	layer5/meshery-osm
+	layer5/meshery-istio:edge-latest
 
 run:
 	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 
-# setup-adapter sets up a new adapter with the given name & port
-setup-adapter:
-	mv "osm" ${ADAPTER}
-	find . -type f -exec sed -i '' -e 's/osm/${ADAPTER}/g' {} +
-	find . -type f -exec sed -i '' -e 's/<port>/${PORT}/g' {} +
-	find . -type f -exec sed -i '' -e 's/<go_version>/${GO_VERSION}/g' {} +
-
-.PHONY: local-check
-local-check: tidy
-local-check: go-fmt
-local-check: go-vet
-local-check: golangci-lint
-
-.PHONY: go-fmt
-go-fmt:
-	go fmt ./...
-
-.PHONY: go-vet
-go-vet:
-	go vet ./...
-
-.PHONY: tidy
-tidy:
-	@echo "Executing go mod tidy"
-	go mod tidy
-
-.PHONY: golangci-lint
-golangci-lint: $(GOLANGCILINT)
-	@echo
-	$(GOPATH)/bin/golangci-lint run
-
-.PHONY: error
-error:
-	go run github.com/layer5io/meshkit/cmd/errorutil -d . update -i ./helpers -o ./helpers
-
-$(GOLANGCILINT):
-	(cd /; GO111MODULE=on GOPROXY="direct" GOSUMDB=off go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.30.0)
-
+run-force-dynamic-reg:
+	FORCE_DYNAMIC_REG=true DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 error:
 	go run github.com/layer5io/meshkit/cmd/errorutil -d . analyze -i ./helpers -o ./helpers
 
+test:
+	export CURRENTCONTEXT="$(kubectl config current-context)" 
+	echo "current-context:" ${CURRENTCONTEXT} 
+	export KUBECONFIG="${HOME}/.kube/config"
+	echo "environment-kubeconfig:" ${KUBECONFIG}
+	GOPROXY=direct GOSUMDB=off GO111MODULE=on go test -v ./...

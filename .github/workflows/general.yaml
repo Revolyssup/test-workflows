@@ -22,6 +22,12 @@ on:
       patternfile_name:
         required: true
         type: string   
+      k8s_version:  #"v1.20.1"
+        required: true
+        type: string   
+      sm_version:  
+        required: true
+        type: string   
       provider: #default to local
         required: false
         type: string   
@@ -32,12 +38,17 @@ on:
 jobs:
   TestAdapter:
     runs-on: ubuntu-latest
+    outputs: 
+      k8s_version: ${{ inputs.k8s_version }}
+      sm_version: ${{ inputs.sm_version }}
+      exitstatus: ${{ steps.runpods.outputs.exitstatus }}
     steps:  
       - name: Setting up minikube
+        id: setk8s
         uses: manusa/actions-setup-minikube@v2.4.1
         with:
           minikube version: 'v1.23.2'
-          kubernetes version: 'v1.20.1'
+          kubernetes version: '"${{ inputs.k8s_version }}"'
           driver: docker
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -136,6 +147,7 @@ jobs:
         run: kubectl get all -A
         # Check if all  pods are in a Running state
       - name: Check if all expected pods have started
+        id: runpods
         run: |
           SECONDS=0
           exitstatus=0
@@ -170,4 +182,14 @@ jobs:
               exitstatus=1
             fi
           done
-          exit $exitstatus
+          touch data.json
+          echo testing > ./data.json
+          echo "::set-output name=exitstatus::$exitstatus"
+
+      - name: UploadResults
+        uses: actions/upload-artifact@v2
+        with:
+          name: data.json
+          path: ./data.json
+      - name: exit
+        run: exit ${needs.TestAdapter.outputs.exitstatus}

@@ -10,8 +10,10 @@ on:
     branches:
       - "*"
 jobs:
-  SetPatterfile:
+  SetPatternfile:
     runs-on: ubuntu-latest
+    outputs:
+      sm_version: ${{ steps.gettag.outputs.release }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -19,12 +21,12 @@ jobs:
         id: gettag
         uses: pozetroninc/github-action-get-latest-release@master
         with:
-          repository: linkerd/linkerd2
+          repository: istio/istio
           excludes: prerelease, draft, edge 
       - name: Change service mesh version in patternfile
         run: | 
            
-           yq e -i '.services.linkerd.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
+           yq e -i '.services.istio-system.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
@@ -33,15 +35,28 @@ jobs:
           path: ./.github/install/deploy.yaml 
 
   TestLinkerd:
-    needs: SetPatterfile
+    needs: SetPatternfile
     uses: meshery/meshery/.github/workflows/testadapters.yaml@master
     with:
-      expected_pods: linkerd-destination,linkerd-identity,linkerd-proxy-injector
-      expected_pods_namespaces: linkerd,linkerd,linkerd
-      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-linkerd-deployment.yaml
-      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-linkerd-service.yaml
-      adapter_name: linkerd
+      expected_pods: istiod,istio-egressgateway,istio-ingressgateway
+      expected_pods_namespaces: istio-system,istio-system,istio-system
+      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
+      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
+      adapter_name: istio
       patternfile_name: deploy.yaml
       provider: Local
+      k8s_version: v1.20.1
+      sm_version: ${{ needs.SetPatternfile.outputs.sm_version }}
     secrets:
       token: ${{ secrets.PROVIDER_TOKEN }} 
+  
+  UpdateDocs:
+    needs: TestLinkerd
+    runs-on: ubuntu-latest
+    steps:
+      - name: DownloadJSON
+        uses: actions/download-artifact@v2
+        with:
+          name: data.json
+      - name: echo results
+        run: cat ./data.json
