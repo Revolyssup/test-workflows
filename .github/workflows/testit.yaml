@@ -67,11 +67,11 @@ jobs:
       - name: Create the Markdown
         run: |
           status= cat ./data.json | jq .status
-          touch v1.20.1.istio.${{ needs.SetPatternfile.outputs.sm_version }}.md
+          touch test.md
           echo " 
             ## Test status 
             ### $status
-          " | v1.20.1.istio.${{ needs.SetPatternfile.outputs.sm_version }}.md
+          " | test.md
           rm data.json
 
       - name: Commit
