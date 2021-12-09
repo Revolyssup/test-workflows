@@ -171,13 +171,17 @@ jobs:
               fi
               breakout=1
           done
+          touch data.json
+          echo '{"k8s_version":"'${{ inputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'", "status":"'$status'" ,"run-on":"$date"}' | jq > ./data.json
           for i in "${!pods[@]}"
           do
             podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
             if [ "$podstatus" = "Running" ];then
               echo "Pod ${pods[i]} started in namespace  ${ns[i]}"
+              jq '.podstatus.${pods[i]} = "Running"' data.json
             else
               echo "Pod ${pods[i]} did not start in namespace ${ns[i]} "
+              jq '.podstatus.${pods[i]} = "Not Running"' data.json
               exitstatus=1
             fi
           done
@@ -187,8 +191,6 @@ jobs:
           else 
               status="Passing"
           fi
-          touch data.json
-          echo '{"k8s_version":"'${{ inputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'", "status":"'$status'" ,"run-on":"$date"}' | jq > ./data.json
           echo "::set-output name=exitstatus::$status"
 
       - name: UploadResults
