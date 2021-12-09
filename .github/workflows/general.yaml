@@ -40,7 +40,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs: 
       k8s_version: ${{ inputs.k8s_version }}
-      sm_version: ${{ inputs.sm_version }}
       exitstatus: ${{ steps.runpods.outputs.exitstatus }}
     steps:  
       - name: Setting up minikube
@@ -190,8 +189,8 @@ jobs:
               status="Passing"
           fi
           touch data.json
-          echo '{"k8s_version":"'${{ needs.TestAdapter.outputs.k8s_version }}'", "service_mesh_name":"'{{ inputs.adapter_name }}'", "service_mesh_version":"'${{ needs.TestAdapter.outputs.sm_version  }}'", "status":"'$status'" }' | jq > ./data.json
-          echo "::set-output name=exitstatus::$exitstatus"
+          echo '{"k8s_version":"'${{ needs.TestAdapter.outputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'", "status":"'$status'" }' | jq > ./data.json
+          echo "::set-output name=exitstatus::$status"
 
       - name: UploadResults
         uses: actions/upload-artifact@v2
@@ -199,4 +198,9 @@ jobs:
           name: data.json
           path: ./data.json
       - name: exit
-        run: exit ${needs.TestAdapter.outputs.exitstatus}
+        run: |
+          status=${needs.TestAdapter.outputs.exitstatus}
+          if [ "$status" = "Passing" ];then
+              exit 0
+          fi
+          exit 1
