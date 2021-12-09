@@ -64,7 +64,9 @@ jobs:
         with:
           name: data.json
       - name: echo results
-        run: cat jq ./data.json
+        run: |
+          echo $(jq ./data.json) > data.json
+          cat data.json
       - name: Create the Markdown
         run: |
           touch test1.md
