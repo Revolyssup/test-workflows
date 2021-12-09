@@ -65,7 +65,8 @@ jobs:
           name: data.json
       - name: echo results
         run: |
-          echo $(echo ./data.json | jq ) > data.json
+          pretty=$(jq . data.json)
+          echo $pretty > data.json
           cat data.json
       - name: Create the Markdown
         run: |
