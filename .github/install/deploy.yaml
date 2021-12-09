@@ -1,24 +1,8 @@
-name: IstioSM
+name: LinkerdSM
 version: 1.0.1
 services:
-  istio:
-    type: IstioMesh
-    namespace: istio-system
+  ld:
+    type: LinkerdMesh
+    namespace: linkerd
     settings:
       version: 1.9.1
-    traits:
-      automaticSidecarInjection:
-        namespaces:
-          - default
-  grafana:
-    type: GrafanaIstioAddon
-    namespace: istio-system
-    dependsOn:
-      - istio
-      - prometheus
-​
-  prometheus:
-    type: PrometheusIstioAddon
-    namespace: istio-system
-    dependsOn:
-      - istio
