@@ -28,6 +28,12 @@ on:
       sm_version:  
         required: true
         type: string   
+      output_filename:  
+        required: true
+        type: string   
+      adapter_version:  
+        required: true
+        type: string  
       provider: #default to local
         required: false
         type: string   
@@ -174,7 +180,7 @@ jobs:
           touch data.json
           runon=$(date)
           echo "Ran on $runon"
-          echo '{"metadata":{ "k8s_version":"'${{ inputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'" ,"runon":"'$runon'"}, "pods_status":{}}' | jq > ./data.json
+          echo '{"metadata":{ "k8s_version":"'${{ inputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'","adapter_version":"'${{inputs.adapter_version }}'" ,"runon":"'$runon'"}, "pods_status":{}}' | jq > ./data.json
           for i in "${!pods[@]}"
           do
             podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
@@ -198,8 +204,8 @@ jobs:
       - name: UploadResults
         uses: actions/upload-artifact@v2
         with:
-          name: data.json
-          path: ./data.json
+          name: ${{ inputs.output_filename }}
+          # path: ./data.json
       - name: exit
         run: |
           status="${{ needs.TestAdapter.outputs.exitstatus}}"
