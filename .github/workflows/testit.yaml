@@ -71,7 +71,7 @@ jobs:
       - name: Create the Markdown
         run: |
           touch test.json
-          $(cat ./data.json | jq ) >  test.json
+          cat ./data.json | jq  >  test.json
           cat test.json
           rm data.json
       - name: Commit
