@@ -74,9 +74,7 @@ jobs:
           echo " 
             ## Test status for Istio
             ### Status: 
-            ```json
                 $(cat ./data.json | jq .pods)
-            ```
             ### Run on: $(cat ./data.json | jq .runon)
             ### K8sVersion: $(cat ./data.json | jq .k8s_version)
             ### Name: $(cat ./data.json | jq .service_mesh_name)
