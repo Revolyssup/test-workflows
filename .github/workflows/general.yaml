@@ -174,7 +174,7 @@ jobs:
           touch data.json
           runon=$(date)
           echo "Ran on $runon"
-          echo '{"k8s_version":"'${{ inputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'" ,"runon":"'$runon'", "pods":{}}' | jq > ./data.json
+          echo '{"metadata":{ "k8s_version":"'${{ inputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'" ,"runon":"'$runon'"}, "pod_status":{}}' | jq > ./data.json
           for i in "${!pods[@]}"
           do
             podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
