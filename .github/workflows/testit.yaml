@@ -74,7 +74,7 @@ jobs:
           echo " 
             ## Test status for Istio
             
-            $(cat ./data.json | jq .pods)
+            $(cat ./data.json | jq )
           " >  test1.md
           cat test1.md
           rm data.json
