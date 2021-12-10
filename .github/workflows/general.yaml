@@ -205,7 +205,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ inputs.output_filename }}
-          # path: ./data.json
+          path: ./${{ inputs.output_filename }}
       - name: exit
         run: |
           status="${{ needs.TestAdapter.outputs.exitstatus}}"
