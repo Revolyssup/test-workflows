@@ -70,13 +70,9 @@ jobs:
           cat data.json
       - name: Create the Markdown
         run: |
-          touch test1.md
-          echo " 
-            ## Test status for Istio
-            
-            $(cat ./data.json | jq )
-          " >  test1.md
-          cat test1.md
+          touch test.json
+          $(cat ./data.json | jq ) >  test.json
+          cat test.json
           rm data.json
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
