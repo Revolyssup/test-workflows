@@ -150,7 +150,7 @@ jobs:
         run: |
           SECONDS=0
           exitstatus=0
-          end=$((SECONDS+10))
+          end=$((SECONDS+20))
           podnames="${{ inputs.expected_pods }}"
           nsnames="${{ inputs.expected_pods_namespaces}}"
           set -f                      
