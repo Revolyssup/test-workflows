@@ -75,11 +75,11 @@ jobs:
           template='{"apiVersion":"core.oam.dev/v1alpha1","kind":"WorkloadDefinition","metadata":{},"spec":{"definitionRef":{},"metadata":{"@type":"pattern.meshery.io/mesh/workload","meshVersion":"'$NEW_ISTIO_VERSION'","meshName":"'$smpMeshName'","k8sAPIVersion":null,"k8sKind":""}}}'
 
           crds=$(./kubeopenapi-jsonschema --location ~/istio.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition")]' -o json --o-filter '$..["spec"]["names"]["kind"]' | jq '.[]')
-          touch test.md
+          touch supported_versions.md
           echo "Creating md in $pwd "
-          echo "## Supported Workloads for Istio $NEW_ISTIO_VERSION are- " > test.md
+          echo "## Supported Workloads for Istio $NEW_ISTIO_VERSION are- " > supported_versions.md
           for t in ${crds[@]}; do
-            echo "* $t" >> test.md
+            echo "* $t" >> supported_versions.md
             nameUpper=`echo $t  | tr -d '"'`
             nameLower=`echo $t  | tr -d '"' | tr '[:upper:]' '[:lower:]'`
             definitionRef=$(printf %s.istio.meshery.layer5.io $nameLower)
@@ -99,12 +99,12 @@ jobs:
             | ."spec"."definitionRef"."name"="'$definitionRef'"' > $dirPath/$nameLower.istio_definition.json
           done
 
-          cat test.md
+          cat supported_versions.md
       - name: Uploading markdown 
         uses: actions/upload-artifact@v2
         with:
-          name: test.md
-          path: util/test.md
+          name: supported_versions.md
+          path: util/supported_versions.md
 
       - name: Cleanup
         run: |
@@ -134,12 +134,14 @@ jobs:
           repository: Revolyssup/test-workflows2
           token: ${{ secrets.TOKEN }}
       - name: Delete already existing file
-        run: rm ./test.md
+        run: rm -rf ./Istio/$NEW_ISTIO_VERSION
+      - name: Create new directory
+        run: mkdir -p ./Istio/$NEW_ISTIO_VERSION
       - name: Download file
         uses: actions/download-artifact@v2
         with:
-          name: test.md
-          path: ./test.md #Path to specific directory in docs 
+          name: supported_versions.md
+          path: ./Istio/$NEW_ISTIO_VERSION #Path to specific directory in docs 
       - name: Commit supported crds to meshery docs
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
