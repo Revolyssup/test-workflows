@@ -138,7 +138,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: test.md
-          path: / #Path to specific directory in docs 
+          path: ./test.md #Path to specific directory in docs 
       - name: Commit supported crds to meshery docs
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
