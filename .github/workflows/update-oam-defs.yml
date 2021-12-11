@@ -26,13 +26,13 @@ jobs:
 
       - name: Check if manifests for latest release exist
         run: |
-          if [ -d templates/oam/workloads/workloads-${{ steps.glrt.outputs.release }} ]
+          if [ -d templates/oam/workloads/${{ steps.glrt.outputs.release }} ]
           then
             echo "EXISTS=true" > $GITHUB_ENV
           else
             export "EXISTS=false" > $GITHUB_ENV
           fi
-
+          echo "exists: $EXISTS"
   generator:
     name: Generate and push OAM definitions
     needs: [ check_istio_version ]
