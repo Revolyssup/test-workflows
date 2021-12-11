@@ -136,17 +136,18 @@ jobs:
       - name: Delete already existing file
         run: |
           echo "new istio version $NEW_ISTIO_VERSION"
-          rm -rf ./Istio/"$NEW_ISTIO_VERSION"
+          path=./Istio/"$NEW_ISTIO_VERSION" #Path to specific directory in docs 
+          rm -rf "$path"  
       - name: Create new directory
         run: |
-          path=./Istio/"$NEW_ISTIO_VERSION"
+          mkdir -p "$path"  
+          cd "$path"
           echo "PATH is $path"
-          mkdir -p $path
       - name: Download file
         uses: actions/download-artifact@v2
         with:
           name: supported_versions.md
-          path: $path #Path to specific directory in docs 
+          path: "$path"
       - name: Commit supported crds to meshery docs
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
