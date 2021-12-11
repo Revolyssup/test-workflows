@@ -142,7 +142,11 @@ jobs:
           echo "new istio version $NEW_ISTIO_VERSION"
           path=./Istio #Path to specific directory in docs 
           echo "path is $path"
-          rm -rf "$path"/$NEW_ISTIO_VERSION.md  
+          if [ -d $path ];then
+            rm "$path"/$NEW_ISTIO_VERSION.md
+          else
+            mkdir -p $path
+          fi
           mv ./supported_versions.md "$path"/$NEW_ISTIO_VERSION.md  
       - name: Commit supported crds to meshery docs
         uses: stefanzweifel/git-auto-commit-action@v4
