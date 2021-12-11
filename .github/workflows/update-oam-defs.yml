@@ -2,12 +2,7 @@ name: Meshery Istio Pattern Components Generator
 on:
   push:
     branches:
-      - "*"
-    tags:
-      - "v*"
-  pull_request:
-    branches:
-      - "*"
+      - 'main'
 
 jobs:
   check_istio_version:
@@ -50,7 +45,7 @@ jobs:
         uses: actions/checkout@master
         with:
           fetch-depth: 1
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          token: ${{ secrets.TOKEN }}
 
       - name: Get Istio manifests
         run: |
