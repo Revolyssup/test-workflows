@@ -134,7 +134,9 @@ jobs:
           repository: Revolyssup/test-workflows2
           token: ${{ secrets.TOKEN }}
       - name: Delete already existing file
-        run: rm -rf ./Istio/$NEW_ISTIO_VERSION
+        run: |
+          cat "new istio version $$NEW_ISTIO_VERSION"
+          rm -rf ./Istio/$NEW_ISTIO_VERSION
       - name: Create new directory
         run: mkdir -p ./Istio/$NEW_ISTIO_VERSION
       - name: Download file
