@@ -103,7 +103,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: $NEW_ISTIO_VERSION.md
-          path: ./util/$NEW_ISTIO_VERSION.md
+          path: util/$NEW_ISTIO_VERSION.md
 
       - name: Cleanup
         run: |
