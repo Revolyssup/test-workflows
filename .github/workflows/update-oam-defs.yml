@@ -142,6 +142,7 @@ jobs:
         run: |
           mkdir -p "$path"  
           cd "$path"
+          $pwd
           echo "PATH is $path"
       - name: Download file
         uses: actions/download-artifact@v2
