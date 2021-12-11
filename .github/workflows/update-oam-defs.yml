@@ -123,7 +123,7 @@ jobs:
 
   Push-to-meshery-docs:
     name: Push supported components to meshery docs
-    needs: [generator]
+    needs: [check_istio_version,generator]
     runs-on: ubuntu-latest
     env:
       NEW_ISTIO_VERSION: ${{ needs.check_istio_version.outputs.NEW_ISTIO_VERSION }}
