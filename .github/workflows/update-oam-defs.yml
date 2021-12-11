@@ -122,12 +122,12 @@ jobs:
 
 
   Push-to-meshery-docs:
-      name: Push supported components to meshery docs
-      needs: [generator]
-      env:
-        NEW_ISTIO_VERSION: ${{ needs.check_istio_version.outputs.NEW_ISTIO_VERSION }}
-      runs-on: ubuntu-latest
-      steps:
+    name: Push supported components to meshery docs
+    needs: [generator]
+    runs-on: ubuntu-latest
+    env:
+      NEW_ISTIO_VERSION: ${{ needs.check_istio_version.outputs.NEW_ISTIO_VERSION }}
+    steps:
       - name: Check out code
         uses: actions/checkout@master
         with:
