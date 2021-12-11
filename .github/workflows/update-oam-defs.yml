@@ -139,17 +139,14 @@ jobs:
           path=./Istio/"$NEW_ISTIO_VERSION" #Path to specific directory in docs 
           echo "path is $path"
           rm -rf "$path"  
-          $pwd
           mkdir -p "$path"  
           cd "$path"
           echo "PATH is $path"
-          export path
-          echo "::set-env name=path::$path"
+          $pwd
       - name: Download file
         uses: actions/download-artifact@v2
         with:
           name: supported_versions.md
-          path: "$path"
       - name: Commit supported crds to meshery docs
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
