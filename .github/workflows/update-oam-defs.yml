@@ -2,7 +2,12 @@ name: Meshery Istio Pattern Components Generator
 on:
   push:
     branches:
-      - 'master'
+      - "*"
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - "*"
 
 jobs:
   check_istio_version:
