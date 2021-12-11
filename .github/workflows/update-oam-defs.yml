@@ -137,12 +137,13 @@ jobs:
         run: |
           echo "new istio version $NEW_ISTIO_VERSION"
           path=./Istio/"$NEW_ISTIO_VERSION" #Path to specific directory in docs 
+          echo "path is $path"
           rm -rf "$path"  
       - name: Create new directory
         run: |
+          $pwd
           mkdir -p "$path"  
           cd "$path"
-          $pwd
           echo "PATH is $path"
       - name: Download file
         uses: actions/download-artifact@v2
