@@ -92,7 +92,7 @@ jobs:
             istio-ingressgateway:  $(jq '.pods_status."istio-ingressgateway"' data.json)
           overall-status: $(jq '."overall-status"' data.json)
           ---" >  test.md
-          cp test.md $filename.md
+          mv test.md $filename.md
           rm data.json
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
