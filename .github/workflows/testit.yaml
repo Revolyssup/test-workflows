@@ -74,7 +74,6 @@ jobs:
           touch data.json
           echo $pretty > data.json
           cat data.json
-
           touch test.md
           filename=$(date '+%Y-%m-%d-%H:%M:%S')
           echo $filename
