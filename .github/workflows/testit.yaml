@@ -76,6 +76,7 @@ jobs:
           # cat ./data.json | jq  >  test.json
           # cat test.json
           # rm data.json
+          touch test.md
           echo `
             ---
             meshery-component: meshery-istio
@@ -87,11 +88,12 @@ jobs:
             service-mesh-version: $(jq .metadata.service_mesh_version data.json)
             tests:
               istiod: $(jq .metadata.pods_status.istiod data.json)
-              istio-egressgateway: $(jq .metadata.pods_status.istio-egressgateway data.json)
-              istio-ingressgateway:  $(jq .metadata.pods_status.istio-ingressgateway data.json)
-            overall-status: pass
+              istio-egressgateway: $(jq .pods_status.istio-egressgateway data.json)
+              istio-ingressgateway:  $(jq .pods_status.istio-ingressgateway data.json)
+            overall-status: $(jq .overall-status data.json)
             ---
-          `
+          ` > test.md
+          rm data.json
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
