@@ -72,8 +72,9 @@ jobs:
           cat data.json
       - name: Create the Markdown
         run: |
-          filename=$(jq '.metadata.runon' data.json)
-          touch $filename.md
+        
+          touch test.md
+          filname=$(jq '.metadata.runon' data.json)
           echo "
           timestamp: $(jq '.metadata.runon' data.json)
           meshery-component: meshery-istio
@@ -88,8 +89,9 @@ jobs:
             istio-egressgateway: $(jq '.pods_status."istio-egressgateway"' data.json)
             istio-ingressgateway:  $(jq '.pods_status."istio-ingressgateway"' data.json)
           overall-status: $(jq '."overall-status"' data.json)
-          ---" >  $filename.md
-          rm data.json
+          ---" >  test.md
+          cp test.md $filename.md
+          rm data.json 
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
