@@ -210,6 +210,7 @@ jobs:
               grep "/releases/tag/" | head -1 | awk -F '"' '{print $4}' | \
               awk -F '/' '{print $NF}' )    
           echo $(jq '.metadata."meshery-server-version" |="'$MESHERY_VERSION'"' data.json ) > data.json
+          echo "exitstatus" >> $GITHUB_ENV
       - name: UploadResults
         uses: actions/upload-artifact@v2
         with:
@@ -217,6 +218,7 @@ jobs:
           path: ./${{ inputs.output_filename }}
       - name: exit
         run: |
-          status="${{ needs.TestAdapter.outputs.exitstatus}}"
-          echo "${{ needs.TestAdapter.outputs.exitstatus}}"
-          exit 0
+            if [ "${{ env.GITHUB_ENV }}" -eq 1 ];then
+                exit 1
+            fi
+         
