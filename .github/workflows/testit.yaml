@@ -74,8 +74,6 @@ jobs:
           cat data.json
       - name: Create the Markdown
         run: |
-          
-          
           touch test.md
           filename=$(date '+%Y-%m-%d-%H:%M:%S')
           echo $filename
@@ -96,7 +94,6 @@ jobs:
           ---" >  test.md
           cp test.md $filename.md
           cd ../../..
-          rm data.json
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
