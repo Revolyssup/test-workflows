@@ -72,10 +72,6 @@ jobs:
           cat data.json
       - name: Create the Markdown
         run: |
-          # touch test.json
-          # cat ./data.json | jq  >  test.json
-          # cat test.json
-          # rm data.json
           # touch test.md
           echo "
           timestamp: $(jq '.metadata.runon' data.json)
