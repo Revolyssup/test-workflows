@@ -156,7 +156,7 @@ jobs:
         run: |
           SECONDS=0
           exitstatus=0
-          end=$((SECONDS+20))
+          end=$((SECONDS+40))
           podnames="${{ inputs.expected_pods }}"
           nsnames="${{ inputs.expected_pods_namespaces}}"
           set -f                      
@@ -179,31 +179,32 @@ jobs:
           done
           touch data.json
           runon=$(date)
-          partial=0
+          itran=0
+          itdidnotrun=0
           echo "Ran on $runon"
           echo '{"metadata":{ "k8s_version":"'${{ inputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'","adapter_version":"'${{inputs.adapter_version }}'" ,"runon":"'$runon'"}, "pods_status":{},"overall-status":""}' | jq > ./data.json
           for i in "${!pods[@]}"
           do
             podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
             if [ "$podstatus" = "Running" ];then
-              partial=1
+              itran=1
               echo "Pod ${pods[i]} started in namespace  ${ns[i]}"
               echo $(jq '.pods_status."'${pods[i]}'" |=  "Running"' data.json) > data.json 
             else
+              itdidnotrun=1
               echo "Pod ${pods[i]} did not start in namespace ${ns[i]} "
               echo $(jq '.pods_status."'${pods[i]}'" |=  "Not Running"' data.json) > data.json 
               exitstatus=1
             fi
           done
           status=""
-          if [ "$exitstatus" -eq 1 ];then
-              if [ "$partial" -eq 1 ];then
-                status="partial"
-              else 
-                status="failing"
-              fi
+          if [ "$exitstatus" -eq 0 ];then
+              status="passing"       
           else 
-              status="passing"
+              status="failing"
+          fi
+          if [ "$itran" -eq 1 ] && [ "$itdidnotrun" -eq 1  ] ;then
+              status="partial"
           fi
           echo $(jq '."overall-status" |=  "'$status'"' data.json) > data.json;     
           MESHERY_VERSION=$(curl -L -s https://github.com/meshery/meshery/releases/latest | grep "/releases/tag/" | head -1 | awk -F '"' '{print $4}' | awk -F '/' '{print $NF}' )    
