@@ -67,13 +67,14 @@ jobs:
           name: data.json
       - name: echo results
         run: |
+          cd ./docs/_compatibility/meshery-istio
           pretty=$(jq . data.json)
           echo $pretty > data.json
           cat data.json
       - name: Create the Markdown
         run: |
           
-          cd ./docs/_compatibility/meshery-istio
+          
           touch test.md
           filename=$(date '+%Y-%m-%d-%H:%M:%S')
           echo $filename
