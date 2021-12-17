@@ -53,7 +53,7 @@ jobs:
       token: ${{ secrets.PROVIDER_TOKEN }} 
   
   UpdateDocs:
-    if: always()
+    if: github.event == 'push'
     needs: TestLinkerd
     runs-on: ubuntu-latest
     steps:
