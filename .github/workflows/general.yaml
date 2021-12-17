@@ -179,12 +179,14 @@ jobs:
           done
           touch data.json
           runon=$(date)
+          partial=0
           echo "Ran on $runon"
           echo '{"metadata":{ "k8s_version":"'${{ inputs.k8s_version }}'", "service_mesh_name":"'${{ inputs.adapter_name }}'", "service_mesh_version":"'${{ inputs.sm_version }}'","adapter_version":"'${{inputs.adapter_version }}'" ,"runon":"'$runon'"}, "pods_status":{},"overall-status":""}' | jq > ./data.json
           for i in "${!pods[@]}"
           do
             podstatus=$(kubectl get pods  -n  ${ns[i]} | grep ${pods[i]} | tr -s ' ' | cut -d " " -f 3)
             if [ "$podstatus" = "Running" ];then
+              partial=1
               echo "Pod ${pods[i]} started in namespace  ${ns[i]}"
               echo $(jq '.pods_status."'${pods[i]}'" |=  "Running"' data.json) > data.json 
             else
@@ -195,12 +197,15 @@ jobs:
           done
           status=""
           if [ "$exitstatus" -eq 1 ];then
-              status="Failing"
+              if [ "$partial" -eq 1 ];then
+                status="partial"
+              else 
+                status="failing"
+              fi
           else 
-              status="Passing"
+              status="passing"
           fi
           echo $(jq '."overall-status" |=  "'$status'"' data.json) > data.json         
-          echo "::set-output name=exitstatus::$status"
 
       - name: UploadResults
         uses: actions/upload-artifact@v2
