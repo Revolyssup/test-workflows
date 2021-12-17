@@ -87,10 +87,10 @@ jobs:
             service-mesh: istio
             service-mesh-version: $(jq .metadata.service_mesh_version data.json)
             tests:
-              istiod: $(jq .metadata.pods_status.istiod data.json)
+              istiod: $(jq .pods_status.istiod data.json)
               istio-egressgateway: $(jq .pods_status.istio-egressgateway data.json)
               istio-ingressgateway:  $(jq .pods_status.istio-ingressgateway data.json)
-            overall-status: $(jq .overall-status data.json)
+            overall-status: $(jq ."overall-status" data.json)
             ---
           ` > test.md
           rm data.json
