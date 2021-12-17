@@ -9,6 +9,8 @@ on:
   pull_request:
     branches:
       - "*"
+  release:
+    types: [published]
 jobs:
   SetPatternfile:
     runs-on: ubuntu-latest
@@ -53,7 +55,7 @@ jobs:
       token: ${{ secrets.PROVIDER_TOKEN }} 
   
   UpdateDocs:
-    if: github.event == 'push'
+    if: github.event_name == 'push' || github.event_name == 'release'
     needs: TestLinkerd
     runs-on: ubuntu-latest
     steps:
