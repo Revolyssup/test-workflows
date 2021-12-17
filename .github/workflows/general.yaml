@@ -199,7 +199,7 @@ jobs:
           else 
               status="Passing"
           fi
-          echo $(jq '."overall-status" |=  "$status"' data.json) > data.json         
+          echo $(jq '."overall-status" |=  "'$status'"' data.json) > data.json         
           echo "::set-output name=exitstatus::$status"
 
       - name: UploadResults
