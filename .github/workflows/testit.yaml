@@ -77,8 +77,7 @@ jobs:
           # cat test.json
           # rm data.json
           touch test.md
-          echo "
-            ---
+          echo "---
             meshery-component: meshery-istio
             meshery-component-version: edge
             meshery-server-version: v0.5.61
@@ -87,12 +86,11 @@ jobs:
             service-mesh: istio
             service-mesh-version: $(jq '.metadata.service_mesh_version' data.json)
             tests:
-              istiod: $(jq '.pods_status.istiod' data.json)
-              istio-egressgateway: $(jq '.pods_status.istio-egressgateway' data.json)
-              istio-ingressgateway:  $(jq '.pods_status.istio-ingressgateway' data.json)
+              istiod: $(jq '.pods_status."istiod"' data.json)
+              istio-egressgateway: $(jq '.pods_status."istio-egressgateway"' data.json)
+              istio-ingressgateway:  $(jq '.pods_status."istio-ingressgateway"' data.json)
             overall-status: $(jq ."overall-status" data.json)
-            ---
-          " > test.md
+            ---" > test.md
           rm data.json
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
