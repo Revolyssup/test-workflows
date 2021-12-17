@@ -62,7 +62,7 @@ jobs:
       token: ${{ secrets.PROVIDER_TOKEN }} 
   
   UpdateDocs:
-    if: always() && github.event_name == 'push' || github.event_name == 'release'
+    if: github.event_name != 'pull_request' 
     needs: TestLinkerd
     runs-on: ubuntu-latest
     steps:
