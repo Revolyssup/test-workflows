@@ -65,11 +65,11 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: data.json
-          path: docs/_compatibility/meshery-istio
       - name: echo results
         run: |
-          cd ./docs/_compatibility/meshery-istio
           pretty=$(jq . data.json)
+          cd ./docs/_compatibility/meshery-istio
+          touch data.json
           echo $pretty > data.json
           cat data.json
       - name: Create the Markdown
@@ -97,6 +97,7 @@ jobs:
           cp test.md $filename.md
           rm data.json 
           cd ../../..
+          rm data.json
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
