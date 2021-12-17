@@ -206,11 +206,9 @@ jobs:
               status="passing"
           fi
           echo $(jq '."overall-status" |=  "'$status'"' data.json) > data.json     
-          MESHERY_VERSION=$(curl -L -s https://github.com/meshery/meshery/releases/latest | \
-              grep "/releases/tag/" | head -1 | awk -F '"' '{print $4}' | \
-              awk -F '/' '{print $NF}' )    
+          MESHERY_VERSION=$(curl -L -s https://github.com/meshery/meshery/releases/latest | grep "/releases/tag/" | head -1 | awk -F '"' '{print $4}' | awk -F '/' '{print $NF}' )    
           echo $(jq '.metadata."meshery-server-version" |="'$MESHERY_VERSION'"' data.json ) > data.json
-          echo "exitstatus" >> $GITHUB_ENV
+          echo "exitstatus=$exitstatus" >> $GITHUB_ENV
       - name: UploadResults
         uses: actions/upload-artifact@v2
         with:
@@ -218,7 +216,7 @@ jobs:
           path: ./${{ inputs.output_filename }}
       - name: exit
         run: |
-            if [ "${{ env.GITHUB_ENV }}" -eq 1 ];then
+            if [ "$exitstatus" -eq 1 ];then
                 exit 1
             fi
          
