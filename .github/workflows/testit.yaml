@@ -76,8 +76,7 @@ jobs:
           touch test.md
           filename=$(date '+%Y-%m-%d-%H:%M:%S')
           echo $filename
-          echo "
-          ---
+          echo "---
           timestamp: $(jq '.metadata.runon' data.json)
           meshery-component: meshery-istio
           meshery-component-version: edge
