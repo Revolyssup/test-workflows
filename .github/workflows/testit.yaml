@@ -74,8 +74,10 @@ jobs:
         run: |
         
           touch test.md
-          filname=$(jq '.metadata.runon' data.json)
+          filename=$(jq '.metadata.runon' data.json)
+          echo $filename
           echo "
+          ---
           timestamp: $(jq '.metadata.runon' data.json)
           meshery-component: meshery-istio
           meshery-component-version: edge
