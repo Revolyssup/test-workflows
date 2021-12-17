@@ -74,7 +74,7 @@ jobs:
         run: |
         
           touch test.md
-          filename=$(jq '.metadata.runon' data.json)
+          filename=$(date '+%Y-%m-%d-%H:%M:%S')
           echo $filename
           echo "
           ---
