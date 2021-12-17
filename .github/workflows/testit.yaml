@@ -65,6 +65,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: data.json
+          path: docs/_compatibility/meshery-istio
       - name: echo results
         run: |
           cd ./docs/_compatibility/meshery-istio
