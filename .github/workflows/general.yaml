@@ -86,8 +86,8 @@ jobs:
       # Start meshery server (Assuming that this step will create the meshery namespace)
       - name: Start meshery server using mesheryctl
         run: |
-           curl -L https://git.io/meshery | PLATFORM=kubernetes bash -
-           sleep 20s
+              curl -L https://git.io/meshery | PLATFORM=kubernetes bash -
+              sleep 20s
       
       # Start the adapter using yamls
       - name: Start adapter 
@@ -205,8 +205,11 @@ jobs:
           else 
               status="passing"
           fi
-          echo $(jq '."overall-status" |=  "'$status'"' data.json) > data.json         
-
+          echo $(jq '."overall-status" |=  "'$status'"' data.json) > data.json     
+          MESHERY_VERSION=$(curl -L -s https://github.com/meshery/meshery/releases/latest | \
+              grep "/releases/tag/" | head -1 | awk -F '"' '{print $4}' | \
+              awk -F '/' '{print $NF}' )    
+          echo $(jq '.metadata."meshery-server-version" |="'$MESHERY_VERSION'"' data.json ) > data.json
       - name: UploadResults
         uses: actions/upload-artifact@v2
         with:
