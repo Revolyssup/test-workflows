@@ -68,12 +68,13 @@ jobs:
       - name: echo results
         run: |
           pretty=$(jq . data.json)
+          rm data.json
+
           cd ./docs/_compatibility/meshery-istio
           touch data.json
           echo $pretty > data.json
           cat data.json
-      - name: Create the Markdown
-        run: |
+
           touch test.md
           filename=$(date '+%Y-%m-%d-%H:%M:%S')
           echo $filename
@@ -93,7 +94,7 @@ jobs:
           overall-status: $(jq '."overall-status"' data.json)
           ---" >  test.md
           cp test.md $filename.md
-          cd ../../..
+          rm data.json
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
