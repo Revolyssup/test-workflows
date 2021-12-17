@@ -95,7 +95,6 @@ jobs:
           overall-status: $(jq '."overall-status"' data.json)
           ---" >  test.md
           cp test.md $filename.md
-          rm data.json 
           cd ../../..
           rm data.json
       - name: Commit
