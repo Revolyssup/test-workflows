@@ -76,7 +76,7 @@ jobs:
           # cat ./data.json | jq  >  test.json
           # cat test.json
           # rm data.json
-          touch test.md
+          # touch test.md
           echo "---
           timestamp: $(jq '.metadata.runon' data.json)
           meshery-component: meshery-istio
@@ -91,7 +91,7 @@ jobs:
             istio-egressgateway: $(jq '.pods_status."istio-egressgateway"' data.json)
             istio-ingressgateway:  $(jq '.pods_status."istio-ingressgateway"' data.json)
           overall-status: $(jq '."overall-status"' data.json)
-          ---" > test.md
+          ---" >> test.md
           rm data.json
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
