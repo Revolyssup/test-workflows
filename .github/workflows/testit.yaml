@@ -74,8 +74,8 @@ jobs:
               echo "skip=1" >> $GITHUB_ENV
             fi    
   UpdateDocs:
-    if: ${{ needs.SkipIfNeeded.outputs.skipdocupdate }} != 1
     needs: [TestLinkerd,SkipIfNeeded]
+    if: ${{ needs.SkipIfNeeded.outputs.skipdocupdate }} != 1
     runs-on: ubuntu-latest
     steps:
       - name: Skip if needed
