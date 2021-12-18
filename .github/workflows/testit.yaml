@@ -68,13 +68,14 @@ jobs:
     steps:
       - name: SKip if needed
         run: |
-            if [ ${{ env.github.event_name }} == 'pull_request' ];then
+            echo"this is it ${{ env.github.event_name }} "
+            if [ "${{ env.github.event_name }}" == 'pull_request' ];then
               exit 1
             fi
-            if [ ${{ env.github.event_name }} == 'push' ];then
+            if [ "${{ env.github.event_name }}" == 'push' ];then
               echo "version=edge" >> $GITHUB_ENV
             fi
-            if [ ${{ env.github.event_name }} == 'release' ];then
+            if [ "${{ env.github.event_name }}" == 'release' ];then
               echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
             fi
       - uses: actions/checkout@master
