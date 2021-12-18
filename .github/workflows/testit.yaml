@@ -68,14 +68,14 @@ jobs:
     steps:
       - name: Skip if needed
         run: |
-            echo "this is it ${{ env.GITHUB_EVENT_NAME }} "
-            if [ "${{ env.GITHUB_EVENT_NAME }}" == "pull_request" ];then
+            echo "this is it ${{ github.event }} "
+            if [ "${{ github.event }}" == "pull_request" ];then
               exit 1
             fi
-            if [ "${{ env.GITHUB_EVENT_NAME }}" == "push" ];then
+            if [ "${{ github.event }}" == "push" ];then
               echo "version=edge" >> $GITHUB_ENV
             fi
-            if [ "${{ env.GITHUB_EVENT_NAME }}" == "release" ];then
+            if [ "${{ github.event }}" == "release" ];then
               echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
             fi
       - uses: actions/checkout@master
