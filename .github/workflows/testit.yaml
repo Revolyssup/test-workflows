@@ -66,16 +66,16 @@ jobs:
     needs: TestLinkerd
     runs-on: ubuntu-latest
     steps:
-      - name: SKip if needed
+      - name: Skip if needed
         run: |
-            echo"this is it ${{ env.github.event_name }} "
-            if [ "${{ env.github.event_name }}" == 'pull_request' ];then
+            echo "this is it ${{ env.GITHUB_EVENT_NAME }} "
+            if [ "${{ env.GITHUB_EVENT_NAME }}" == "pull_request" ];then
               exit 1
             fi
-            if [ "${{ env.github.event_name }}" == 'push' ];then
+            if [ "${{ env.GITHUB_EVENT_NAME }}" == "push" ];then
               echo "version=edge" >> $GITHUB_ENV
             fi
-            if [ "${{ env.github.event_name }}" == 'release' ];then
+            if [ "${{ env.GITHUB_EVENT_NAME }}" == "release" ];then
               echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
             fi
       - uses: actions/checkout@master
