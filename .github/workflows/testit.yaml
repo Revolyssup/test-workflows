@@ -60,18 +60,27 @@ jobs:
       output_filename: data.json
     secrets:
       token: ${{ secrets.PROVIDER_TOKEN }} 
-  
-  UpdateDocs:
+
+  SkipIfNeeded:
     if: always()
-    needs: TestLinkerd
+    runs-on: ubuntu-latest
+    outputs:
+      skipdocupdate: ${{ env.skip }}
+    steps:
+      - name: check if needs skipping
+        run: |
+            echo "this is it ${{ github.event_name }} "
+            if [ "${{ github.event_name }}" == "pull_request" ];then
+              echo "skip=yes" >> $GITHUB_ENV
+            fi    
+  UpdateDocs:
+    if: ${{ needs.SkipIfNeeded.outputs.skipdocupdate }} != "yes"
+    needs: [TestLinkerd,SkipIfNeeded]
     runs-on: ubuntu-latest
     steps:
       - name: Skip if needed
         run: |
             echo "this is it ${{ github.event_name }} "
-            if [ "${{ github.event_name }}" == "pull_request" ];then
-              exit 0
-            fi
             if [ "${{github.event_name }}" == "push" ];then
               echo "version=edge" >> $GITHUB_ENV
             fi
