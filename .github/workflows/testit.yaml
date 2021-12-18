@@ -61,21 +61,9 @@ jobs:
     secrets:
       token: ${{ secrets.PROVIDER_TOKEN }} 
 
-  SkipIfNeeded:
-    if: always()
-    runs-on: ubuntu-latest
-    outputs:
-      skipdocupdate: ${{ env.skip }}
-    steps:
-      - name: check if needs skipping
-        run: |
-            echo "this is it ${{ github.event_name }} "
-            if [ "${{ github.event_name }}" == "pull_request" ];then
-              echo "skip=1" >> $GITHUB_ENV
-            fi    
   UpdateDocs:
-    needs: [TestLinkerd,SkipIfNeeded]
-    if: " needs.SkipIfNeeded.outputs.skipdocupdate != 1 "
+    needs: TestLinkerd
+    if:  "always() && github.event_name != 'pull_request' "
     runs-on: ubuntu-latest
     steps:
       - name: Skip if needed
