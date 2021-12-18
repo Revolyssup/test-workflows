@@ -75,7 +75,7 @@ jobs:
             fi    
   UpdateDocs:
     needs: [TestLinkerd,SkipIfNeeded]
-    if: ${{ needs.SkipIfNeeded.outputs.skipdocupdate }} != 1
+    if: " needs.SkipIfNeeded.outputs.skipdocupdate != 1 "
     runs-on: ubuntu-latest
     steps:
       - name: Skip if needed
