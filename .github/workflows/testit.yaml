@@ -70,7 +70,7 @@ jobs:
         run: |
             echo "this is it ${{ github.event_name }} "
             if [ "${{ github.event_name }}" == "pull_request" ];then
-              exit 1
+              exit 0
             fi
             if [ "${{github.event_name }}" == "push" ];then
               echo "version=edge" >> $GITHUB_ENV
