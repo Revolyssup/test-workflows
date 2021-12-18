@@ -132,13 +132,13 @@ jobs:
         with:
           name: patternfile
       # This pattern will try to install  service mesh
-      - name: Pattern apply (Install service mesh)
-        run: |
-            cat ./${{ inputs.patternfile_name }}
-            mesheryctl pattern apply -f ./${{ inputs.patternfile_name }}
+      # - name: Pattern apply (Install service mesh)
+      #   run: |
+      #       cat ./${{ inputs.patternfile_name }}
+      #       mesheryctl pattern apply -f ./${{ inputs.patternfile_name }}
       # Wait for sometime to get some logs
-      - name: Sleep for 30 sec
-        run: sleep 30s
+      # - name: Sleep for 30 sec
+      #   run: sleep 30s
    
       - name: Check adapter logs
         run: |
