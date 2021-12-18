@@ -62,10 +62,15 @@ jobs:
       token: ${{ secrets.PROVIDER_TOKEN }} 
   
   UpdateDocs:
-    if: github.event_name != 'pull_request' 
+    if: always()
     needs: TestLinkerd
     runs-on: ubuntu-latest
     steps:
+      - name: SKip if needed
+        run: |
+            if [ ${{ env.github.event_name }} == 'pull_request' ];then
+              exit 1
+            fi
       - uses: actions/checkout@master
         with:
           repository: Revolyssup/test-workflows2  
