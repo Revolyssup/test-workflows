@@ -22,7 +22,7 @@ on:
       patternfile_name:
         required: true
         type: string   
-      k8s_version:  #"v1.20.1"
+      k8s_version:  
         required: true
         type: string   
       sm_version:  
@@ -59,10 +59,10 @@ jobs:
 
 
       # Build the image by setting appropriate environmental variables in order to access the image from minikube
-      # - name: Build the tagged Docker image
-      #   run: |
-      #     eval $(minikube -p minikube docker-env) 
-      #     docker build  -t test:test .
+      - name: Build the tagged Docker image
+        run: |
+          eval $(minikube -p minikube docker-env) 
+          docker build  -t test:test .
       - name: What is kube config
         run:  cat ~/.kube/config     
       # Setup meshery config.yaml and auth.json
@@ -94,8 +94,8 @@ jobs:
         run: |
           touch testimagedep.yaml
           curl ${{ inputs.deployment_url }} > ./testimagedep.yaml
-          # yq e -i '.spec.template.spec.containers[0].image="test:test"' ./testimagedep.yaml 
-          # yq e -i '.spec.template.spec.containers[0].imagePullPolicy="Never"' ./testimagedep.yaml 
+          yq e -i '.spec.template.spec.containers[0].image="test:test"' ./testimagedep.yaml 
+          yq e -i '.spec.template.spec.containers[0].imagePullPolicy="Never"' ./testimagedep.yaml 
           cat testimagedep.yaml
           kubectl apply -f testimagedep.yaml --namespace=meshery
           kubectl apply -f ${{ inputs.service_url }} --namespace=meshery
@@ -132,13 +132,13 @@ jobs:
         with:
           name: patternfile
       # This pattern will try to install  service mesh
-      # - name: Pattern apply (Install service mesh)
-      #   run: |
-      #       cat ./${{ inputs.patternfile_name }}
-      #       mesheryctl pattern apply -f ./${{ inputs.patternfile_name }}
+      - name: Pattern apply (Install service mesh)
+        run: |
+            cat ./${{ inputs.patternfile_name }}
+            mesheryctl pattern apply -f ./${{ inputs.patternfile_name }}
       # Wait for sometime to get some logs
-      # - name: Sleep for 30 sec
-      #   run: sleep 30s
+      - name: Sleep for 30 sec
+        run: sleep 30s
    
       - name: Check adapter logs
         run: |
@@ -156,7 +156,7 @@ jobs:
         run: |
           SECONDS=0
           exitstatus=0
-          end=$((SECONDS+0))
+          end=$((SECONDS+150))
           podnames="${{ inputs.expected_pods }}"
           nsnames="${{ inputs.expected_pods_namespaces}}"
           set -f                      
