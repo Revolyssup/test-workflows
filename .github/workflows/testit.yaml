@@ -63,7 +63,7 @@ jobs:
 
   UpdateDocs:
     needs: TestLinkerd
-    if: always() && " github.event_name != 'pull_request' "
+    if:  "always() && github.event_name != 'pull_request' "
     runs-on: ubuntu-latest
     steps:
       - name: Skip if needed
