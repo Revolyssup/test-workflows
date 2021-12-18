@@ -137,8 +137,8 @@ jobs:
       #       cat ./${{ inputs.patternfile_name }}
       #       mesheryctl pattern apply -f ./${{ inputs.patternfile_name }}
       # Wait for sometime to get some logs
-      - name: Sleep for 30 sec
-        run: sleep 30s
+      # - name: Sleep for 30 sec
+      #   run: sleep 30s
    
       - name: Check adapter logs
         run: |
