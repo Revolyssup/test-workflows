@@ -35,25 +35,24 @@ jobs:
           excludes: prerelease, draft, edge 
       - name: Change service mesh version in patternfile
         run: | 
-           yq e -i '.services.istio.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
-           cat ./.github/install/deploy.yaml
+           yq e -i '.services.istio.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
+           cat ./.github/install/deploywithaddons.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
         with:
           name: patternfile
-          path: ./.github/install/deploy.yaml 
+          path: ./.github/install/deploywithaddons.yaml 
 
   TestLinkerd:
     needs: SetPatternfile
-    # uses: Revolyssup/test-workflows/.github/workflows/general.yaml@main
     uses: meshery/meshery/.github/workflows/testadapters.yaml@master
     with:
-      expected_pods: istiod,istio-egressgateway,istio-ingressgateway
-      expected_pods_namespaces: istio-system,istio-system,istio-system
+      expected_pods: istiod,istio-egressgateway,istio-ingressgateway,grafana, prometheus
+      expected_pods_namespaces: istio-system,istio-system,istio-system,istio-system,istio-system
       deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
       service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
       adapter_name: istio
-      patternfile_name: deploy.yaml
+      patternfile_name: deploywithaddons.yaml
       provider: Local
       k8s_version: v1.20.1
       sm_version: ${{ needs.SetPatternfile.outputs.sm_version }}
@@ -109,6 +108,8 @@ jobs:
             istiod: $(jq '.pods_status."istiod"' data.json)
             istio-egressgateway: $(jq '.pods_status."istio-egressgateway"' data.json)
             istio-ingressgateway:  $(jq '.pods_status."istio-ingressgateway"' data.json)
+            grafana-addon: $(jq '.pods_status."grafana"' data.json)
+            prometheus-addon: $(jq '.pods_status."prometheus"' data.json)
           overall-status: $(jq '."overall-status"' data.json)
           ---" >  test.md
           mv test.md $filename.md
