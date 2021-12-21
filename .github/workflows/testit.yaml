@@ -86,7 +86,7 @@ jobs:
         run: |
           pretty=$(jq . data.json)
           rm data.json
-
+          mkdir -p ./docs/_compatibility/meshery-osm;
           cd ./docs/_compatibility/meshery-osm
           touch data.json
           echo $pretty > data.json
