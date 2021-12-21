@@ -1,8 +1,7 @@
-name: IstioSM
-version: 1.0.1
+name: OSMMesh
 services:
-  istio:
-    type: IstioMesh
-    namespace: istio-system
+  osm:
+    type: OSMMesh
+    namespace: osm
     settings:
-      version: 1.9.1
+      version:  #will be inserted dynamically
