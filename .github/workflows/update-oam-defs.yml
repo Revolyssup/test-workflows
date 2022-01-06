@@ -1,10 +1,10 @@
 name: Meshery Istio Pattern Components Generator
 on:
-  push:
-    branches:
-      - 'main'
+  # push:
+  #   branches:
+  #     - 'main'
   schedule:
-    - cron: '0 */15 * * *'
+    - cron: '0 */5 * * *'
 jobs:
   check_istio_version:
     name: Check Istio Version
