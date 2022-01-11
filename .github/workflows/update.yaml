@@ -16,6 +16,11 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: 1.17
+    - name: Download KubeOpenAPI binary
+      run: |
+        URL=https://github.com/layer5io/kubeopenapi-jsonschema/releases/download/v0.1.2/kubeopenapi-jsonschema
+        mkdir -p ~/.meshery/bin
+        cd ~/.meshery/bin && { curl -O $URL ; cd -; }  
     - run: |
         cd build; GOSUMDB=off GO111MODULE=on go test 
     - name: Commit changes
