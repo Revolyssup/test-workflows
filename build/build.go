@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -53,6 +54,7 @@ type StaticCompConfig struct {
 //in library
 func CreateComponents(scfg StaticCompConfig) error {
 	dir := filepath.Join(scfg.Path, scfg.DirName)
+	fmt.Println("HELLO ", dir)
 	_, err := os.Stat(dir)
 	if err != nil && !os.IsNotExist(err) {
 		return err
@@ -123,9 +125,26 @@ func GetNameFromWorkloadDefinition(definition []byte) string {
 
 func init() {
 	wd, _ := os.Getwd()
-	workloadPath = filepath.Join(wd, "templates", "oam", "workloads")
+
 	versions, _ := utils.GetLatestReleaseTagsSorted("istio", "istio")
 	LatestVersion = versions[len(versions)-1]
 	DefaultGenerationMethod = adapter.Manifests
 	DefaultGenerationURL = "https://raw.githubusercontent.com/istio/istio/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
+
+	force = flag.Bool("force", false, "")
+	version = flag.String("version", LatestVersion, "")
+	path = flag.String("path", workloadPath, "")
+	method = flag.String("method", DefaultGenerationMethod, "")
+	url = flag.String("url", DefaultGenerationURL, "")
+	w = flag.String("wd", wd, "")
+	flag.Parse()
+
+	workloadPath = filepath.Join(*w, "templates", "oam", "workloads")
+	flag.Parse()
+	err := os.Chdir(*w)
+	if err != nil {
+		fmt.Println("Failed tochdir: ", err.Error())
+		return
+	}
+
 }

@@ -1,19 +1,20 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"os"
 )
 
+var w *string
+var force *bool
+var version *string
+var method *string
+var url *string
+var path *string
+
 func main() {
-
-	force := flag.Bool("force", false, "")
-	version := flag.String("version", LatestVersion, "")
-	path := flag.String("path", workloadPath, "")
-	method := flag.String("method", DefaultGenerationMethod, "")
-	url := flag.String("url", DefaultGenerationURL, "")
-	flag.Parse()
-
+	w, _ := os.Getwd()
+	fmt.Println("W ", w)
 	err := CreateComponents(StaticCompConfig{
 		URL:     *url,
 		Method:  *method,
