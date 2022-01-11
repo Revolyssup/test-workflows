@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
 var w *string
@@ -13,8 +12,6 @@ var url *string
 var path *string
 
 func main() {
-	w, _ := os.Getwd()
-	fmt.Println("W ", w)
 	err := CreateComponents(StaticCompConfig{
 		URL:     *url,
 		Method:  *method,
