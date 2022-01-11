@@ -16,9 +16,11 @@ jobs:
         go-version: 1.17
     - name: Download KubeOpenAPI binary
       run: |
-        URL=https://github.com/layer5io/kubeopenapi-jsonschema/releases/download/v0.1.2/kubeopenapi-jsonschema
+        wd=$(pwd)
         mkdir -p ~/.meshery/bin
-        cd ~/.meshery/bin && { curl -O $URL ; cd -; }  
+        cd ~/.meshery/bin
+        curl -L https://github.com/layer5io/kubeopenapi-jsonschema/releases/download/v0.1.2/kubeopenapi-jsonschema --output ./kubeopenapi-jsonschema
+        cd $wd
     - run: |
         cd build; go test ; cd ..
     - name: Commit changes
