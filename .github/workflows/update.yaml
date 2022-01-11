@@ -25,7 +25,9 @@ jobs:
         sed -E 's/.*"([^"]+)".*/\1/')
         curl -L https://github.com/layer5io/kubeopenapi-jsonschema/releases/download/$Version/kubeopenapi-jsonschema --output ./kubeopenapi-jsonschema
         cd $wd
-        cd build; go build main.go build.go; ls ; ./main -wd=$wd ; cd ..;ls
+        cd build; go build main.go build.go; ls ; ./main -wd=$wd ; cd ..;
+        cd templates/oam/workloads/1.12.1  ;ls
+        cd $wd
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
