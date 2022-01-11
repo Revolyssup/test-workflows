@@ -92,6 +92,7 @@ func CreateComponents(scfg StaticCompConfig) error {
 			return err
 		}
 	}
+	fmt.Println("Done...")
 	return nil
 }
 
