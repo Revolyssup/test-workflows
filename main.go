@@ -16,11 +16,13 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/layer5io/meshery-istio/build"
+	// "github.com/layer5io/meshery-istio/build"
 	"github.com/layer5io/meshery-istio/istio"
 	"github.com/layer5io/meshkit/logger"
 
@@ -171,36 +173,30 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 
 }
 func registerWorkloads(port string, log logger.Handler) {
-	var url string
-	var gm string
-	version := build.LatestVersion
-	// Prechecking to skip comp gen
-	if os.Getenv("FORCE_DYNAMIC_REG") != "true" && oam.AvailableVersions[version] {
-		log.Info("Components available statically for version ", version, ". Skipping dynamic component registeration")
-		return
-	}
-	//If a URL is passed from env variable, it will be used for component generation with default method being "using manifests"
-	// In case a helm chart URL is passed, COMP_GEN_METHOD env variable should be set to Helm otherwise the component generation fails
+	force := ""
+	url := ""
+	gm := ""
+	// if os.Getenv("FORCE_DYNAMIC_REG") == "true" {
+	// 	force = "-f"
+	// }
 	if os.Getenv("COMP_GEN_URL") != "" && (os.Getenv("COMP_GEN_METHOD") == "Helm" || os.Getenv("COMP_GEN_METHOD") == "Manifest") {
 		url = os.Getenv("COMP_GEN_URL")
 		gm = os.Getenv("COMP_GEN_METHOD")
 		log.Info("Registering workload components from url ", url, " using ", gm, " method...")
-	} else {
-		log.Info("Registering latest workload components for version ", version)
-		//default way
-		url = build.DefaultGenerationURL
-		gm = build.DefaultGenerationMethod
 	}
-	// Register workloads
-	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
-		TimeoutInMinutes: 30,
-		URL:              url,
-		GenerationMethod: gm,
-		Config:           build.NewConfig(version),
-		Operation:        config.IstioOperation,
-	}); err != nil {
-		log.Info(err.Error())
+
+	cmd := exec.Command("./build/main", force)
+	out, err := cmd.Output()
+	if err != nil {
+		log.Info("Shit ", err.Error())
 		return
 	}
-	log.Info("Latest workload components successfully registered.")
+	if !strings.Contains(string(out), "Skipping") {
+		fmt.Println("THIS ", string(out))
+		oam.WorkloadPath = filepath.Join(oam.WorkloadPath)
+		registerCapabilities(port, log)
+		return
+	}
+
+	log.Info("Skipping component registeration")
 }

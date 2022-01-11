@@ -1,4 +1,4 @@
-package build
+package main
 
 import (
 	"encoding/json"
@@ -54,19 +54,14 @@ type StaticCompConfig struct {
 func CreateComponents(scfg StaticCompConfig) error {
 	dir := filepath.Join(scfg.Path, scfg.DirName)
 	_, err := os.Stat(dir)
-	if err == nil {
-		if !scfg.Force {
-			fmt.Println("Skipping...")
-			return nil
-		} else {
-			err := os.RemoveAll(filepath.Join(dir, "/**"))
-			if err != nil {
-				return err
-			}
-		}
-	}
-	if !os.IsNotExist(err) {
+	if err != nil && !os.IsNotExist(err) {
 		return err
+	}
+	if err != nil && os.IsNotExist(err) {
+		err = os.Mkdir(dir, 0777)
+		if err != nil {
+			return err
+		}
 	}
 	var comp *manifests.Component
 	switch scfg.Method {
@@ -75,25 +70,22 @@ func CreateComponents(scfg StaticCompConfig) error {
 	case adapter.HelmCHARTS:
 		comp, err = manifests.GetFromHelm(scfg.URL, manifests.SERVICE_MESH, scfg.Config)
 	default:
-		return errors.New("Invalid Method: " + scfg.Method)
-	}
-	if err != nil {
-		return errors.New("nil components: " + err.Error())
-	}
-	err = os.Mkdir(dir, 0777)
-	if err != nil {
 		return err
 	}
+	if comp == nil {
+		return errors.New("nil components")
+	}
+
 	for i, def := range comp.Definitions {
 		schema := comp.Schemas[i]
 		name := GetNameFromWorkloadDefinition([]byte(def))
 		defFileName := name + "_definition.json"
 		schemaFileName := name + ".meshery.layer5io.schema.json"
-		err := writeToFile(filepath.Join(dir, defFileName), []byte(def))
+		err := writeToFile(filepath.Join(dir, defFileName), []byte(def), scfg.Force)
 		if err != nil {
 			return err
 		}
-		err = writeToFile(filepath.Join(dir, schemaFileName), []byte(schema))
+		err = writeToFile(filepath.Join(dir, schemaFileName), []byte(schema), scfg.Force)
 		if err != nil {
 			return err
 		}
@@ -102,14 +94,24 @@ func CreateComponents(scfg StaticCompConfig) error {
 }
 
 //create a file with this filename and stuff the string
-func writeToFile(path string, data []byte) error {
-	_, err := os.Create(path)
-	if err != nil {
+func writeToFile(path string, data []byte, force bool) error {
+	_, err := os.Stat(path)
+	if err != nil && !os.IsNotExist(err) { //There some other error than non existence of file
 		return err
+	}
+
+	if err == nil { //file already exists
+		if !force { // Dont override existing file, skip it
+			fmt.Println("File already exists,skipping...")
+			return nil
+		}
+		err := os.Remove(path) //Remove the existing file, before overriding it
+		if err != nil {
+			return err
+		}
 	}
 	return ioutil.WriteFile(path, data, 0666)
 }
-
 func GetNameFromWorkloadDefinition(definition []byte) string {
 	var wd v1alpha1.WorkloadDefinition
 	err := json.Unmarshal(definition, &wd)
@@ -121,7 +123,7 @@ func GetNameFromWorkloadDefinition(definition []byte) string {
 
 func init() {
 	wd, _ := os.Getwd()
-	workloadPath = filepath.Join(filepath.Clean(filepath.Join(wd, "..")), "templates", "oam", "workloads")
+	workloadPath = filepath.Join(wd, "templates", "oam", "workloads")
 	versions, _ := utils.GetLatestReleaseTagsSorted("istio", "istio")
 	LatestVersion = versions[len(versions)-1]
 	DefaultGenerationMethod = adapter.Manifests
