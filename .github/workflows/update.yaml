@@ -2,7 +2,7 @@ name: Pattern Components Generator
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
 
 jobs:
   GenerateComponents:
