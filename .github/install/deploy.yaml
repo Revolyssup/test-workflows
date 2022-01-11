@@ -1,7 +1,0 @@
-name: OSMMesh
-services:
-  osm:
-    type: OSMMesh
-    namespace: osm
-    settings:
-      version:  #will be inserted dynamically

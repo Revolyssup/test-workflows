@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 package main
-//adding comments
+
 import (
 	"fmt"
 	"os"
@@ -20,11 +20,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/layer5io/meshery-istio/build"
 	"github.com/layer5io/meshery-istio/istio"
 	"github.com/layer5io/meshkit/logger"
-	"github.com/layer5io/meshkit/utils"
-	"github.com/layer5io/meshkit/utils/manifests"
-	smp "github.com/layer5io/service-mesh-performance/spec"
 
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
@@ -35,8 +33,8 @@ import (
 )
 
 var (
-	serviceName = "istio-adaptor"
-	version     = "none"
+	serviceName = "istio-adapter"
+	version     = "edge"
 	gitsha      = "none"
 )
 
@@ -145,20 +143,20 @@ func serviceAddress() string {
 		return svcAddr
 	}
 
-	return "mesherylocal.layer5.io"
+	return "localhost"
 }
 
 func registerCapabilities(port string, log logger.Handler) {
 	// Register workloads
-	log.Info("Registering static workloads...")
+	log.Info("Registering static workloads with Meshery Server...")
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
-	log.Info("Registering static workloads completed")
 	// Register traits
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
+	log.Info("Successfully registered static components with Meshery Server.")
 }
 
 func registerDynamicCapabilities(port string, log logger.Handler) {
@@ -175,53 +173,31 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 func registerWorkloads(port string, log logger.Handler) {
 	var url string
 	var gm string
+	version := build.LatestVersion
 	// Prechecking to skip comp gen
-	version, err := utils.GetLatestReleaseTag("istio", "istio")
-	if err != nil {
-		log.Info("Could not get latest stable release")
-		return
-	}
 	if os.Getenv("FORCE_DYNAMIC_REG") != "true" && oam.AvailableVersions[version] {
 		log.Info("Components available statically for version ", version, ". Skipping dynamic component registeration")
 		return
 	}
 	//If a URL is passed from env variable, it will be used for component generation with default method being "using manifests"
 	// In case a helm chart URL is passed, COMP_GEN_METHOD env variable should be set to Helm otherwise the component generation fails
-	if os.Getenv("COMP_GEN_URL") != "" {
+	if os.Getenv("COMP_GEN_URL") != "" && (os.Getenv("COMP_GEN_METHOD") == "Helm" || os.Getenv("COMP_GEN_METHOD") == "Manifest") {
 		url = os.Getenv("COMP_GEN_URL")
-		if os.Getenv("COMP_GEN_METHOD") == "Helm" || os.Getenv("COMP_GEN_METHOD") == "Manifest" {
-			gm = os.Getenv("COMP_GEN_METHOD")
-		} else {
-			gm = adapter.Manifests
-		}
+		gm = os.Getenv("COMP_GEN_METHOD")
 		log.Info("Registering workload components from url ", url, " using ", gm, " method...")
 	} else {
 		log.Info("Registering latest workload components for version ", version)
 		//default way
-		url = "https://raw.githubusercontent.com/istio/istio/" + version + "/manifests/charts/base/crds/crd-all.gen.yaml"
-		gm = adapter.Manifests
+		url = build.DefaultGenerationURL
+		gm = build.DefaultGenerationMethod
 	}
 	// Register workloads
 	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
 		TimeoutInMinutes: 30,
 		URL:              url,
 		GenerationMethod: gm,
-		Config: manifests.Config{
-			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_ISTIO)],
-			MeshVersion: version,
-			Filter: manifests.CrdFilter{
-				RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
-				NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
-				VersionFilter: []string{"$[0]..spec.versions[0]"},
-				GroupFilter:   []string{"$[0]..spec"},
-				SpecFilter:    []string{"$[0]..openAPIV3Schema.properties.spec"},
-				ItrFilter:     []string{"$[?(@.spec.names.kind"},
-				ItrSpecFilter: []string{"$[?(@.spec.names.kind"},
-				VField:        "name",
-				GField:        "group",
-			},
-		},
-		Operation: config.IstioOperation,
+		Config:           build.NewConfig(version),
+		Operation:        config.IstioOperation,
 	}); err != nil {
 		log.Info(err.Error())
 		return
