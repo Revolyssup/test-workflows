@@ -75,10 +75,10 @@ func CreateComponents(scfg StaticCompConfig) error {
 	case adapter.HelmCHARTS:
 		comp, err = manifests.GetFromHelm(scfg.URL, manifests.SERVICE_MESH, scfg.Config)
 	default:
-		return err
+		return errors.New("Invalid Method: " + scfg.Method)
 	}
-	if comp == nil {
-		return errors.New("nil components")
+	if err != nil {
+		return errors.New("nil components: " + err.Error())
 	}
 	err = os.Mkdir(dir, 0777)
 	if err != nil {
