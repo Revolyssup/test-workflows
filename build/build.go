@@ -131,16 +131,17 @@ func init() {
 	LatestVersion = versions[len(versions)-1]
 	DefaultGenerationMethod = adapter.Manifests
 	DefaultGenerationURL = "https://raw.githubusercontent.com/istio/istio/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
+	w = flag.String("wd", wd, "")
+	flag.Parse()
+
+	workloadPath = filepath.Join(*w, "templates", "oam", "workloads")
+	flag.Parse()
 
 	force = flag.Bool("force", false, "")
 	version = flag.String("version", LatestVersion, "")
 	path = flag.String("path", workloadPath, "")
 	method = flag.String("method", DefaultGenerationMethod, "")
 	url = flag.String("url", DefaultGenerationURL, "")
-	w = flag.String("wd", wd, "")
-	flag.Parse()
-
-	workloadPath = filepath.Join(*w, "templates", "oam", "workloads")
 	flag.Parse()
 	err := os.Chdir(*w)
 	if err != nil {
