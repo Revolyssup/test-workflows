@@ -17,10 +17,12 @@ import (
 	"github.com/layer5io/meshkit/utils/manifests"
 )
 
-var DefaultGenerationMethod string
-var DefaultGenerationURL string
-var LatestVersion string
-var workloadPath string
+var (
+	versions, _             = utils.GetLatestReleaseTagsSorted("istio", "istio")
+	LatestVersion           = versions[len(versions)-1]
+	DefaultGenerationMethod = adapter.Manifests
+	DefaultGenerationURL    = "https://raw.githubusercontent.com/istio/istio/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
+)
 
 //Should stay here
 func NewConfig(version string) manifests.Config {
@@ -54,7 +56,6 @@ type StaticCompConfig struct {
 //in library
 func CreateComponents(scfg StaticCompConfig) error {
 	dir := filepath.Join(scfg.Path, scfg.DirName)
-	fmt.Println("HELLO ", dir)
 	_, err := os.Stat(dir)
 	if err != nil && !os.IsNotExist(err) {
 		return err
@@ -113,6 +114,7 @@ func writeToFile(path string, data []byte, force bool) error {
 			return err
 		}
 	}
+	fmt.Println("writing to ", path)
 	return ioutil.WriteFile(path, data, 0666)
 }
 func GetNameFromWorkloadDefinition(definition []byte) string {
@@ -126,27 +128,12 @@ func GetNameFromWorkloadDefinition(definition []byte) string {
 
 func init() {
 	wd, _ := os.Getwd()
-
-	versions, _ := utils.GetLatestReleaseTagsSorted("istio", "istio")
-	LatestVersion = versions[len(versions)-1]
-	DefaultGenerationMethod = adapter.Manifests
-	DefaultGenerationURL = "https://raw.githubusercontent.com/istio/istio/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
-	w = flag.String("wd", wd, "")
-	flag.Parse()
-
-	workloadPath = filepath.Join(*w, "templates", "oam", "workloads")
-	flag.Parse()
+	workloadPath := filepath.Join(wd, "templates", "oam", "workloads") //default workload path
 
 	force = flag.Bool("force", false, "")
 	version = flag.String("version", LatestVersion, "")
-	path = flag.String("path", workloadPath, "")
+	path = flag.String("path", workloadPath, "This is the path of the directory where to store created components.")
 	method = flag.String("method", DefaultGenerationMethod, "")
 	url = flag.String("url", DefaultGenerationURL, "")
 	flag.Parse()
-	err := os.Chdir(*w)
-	if err != nil {
-		fmt.Println("Failed tochdir: ", err.Error())
-		return
-	}
-
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 )
 
-var w *string
 var force *bool
 var version *string
 var method *string

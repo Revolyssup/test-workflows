@@ -39,6 +39,9 @@ var (
 	version     = "edge"
 	gitsha      = "none"
 )
+var wd, _ = os.Getwd()
+
+var pathToCompGenBinary = filepath.Join(wd, "build", "build")
 
 func init() {
 	// Create the config path if it doesn't exists as the entire adapter
@@ -150,7 +153,7 @@ func serviceAddress() string {
 
 func registerCapabilities(port string, log logger.Handler) {
 	// Register workloads
-	log.Info("Registering static workloads with Meshery Server...")
+	log.Info("Registering workloads with Meshery Server...")
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
@@ -158,7 +161,7 @@ func registerCapabilities(port string, log logger.Handler) {
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
-	log.Info("Successfully registered static components with Meshery Server.")
+	log.Info("Successfully registered components with Meshery Server.")
 }
 
 func registerDynamicCapabilities(port string, log logger.Handler) {
@@ -173,27 +176,27 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 
 }
 func registerWorkloads(port string, log logger.Handler) {
-	force := ""
-	url := ""
-	gm := ""
-	// if os.Getenv("FORCE_DYNAMIC_REG") == "true" {
-	// 	force = "-f"
-	// }
+	log.Info("Registering workloads for latest version")
+	args := []string{}
+	if os.Getenv("FORCE_DYNAMIC_REG") == "true" {
+		args = append(args, "-f")
+	}
 	if os.Getenv("COMP_GEN_URL") != "" && (os.Getenv("COMP_GEN_METHOD") == "Helm" || os.Getenv("COMP_GEN_METHOD") == "Manifest") {
-		url = os.Getenv("COMP_GEN_URL")
-		gm = os.Getenv("COMP_GEN_METHOD")
-		log.Info("Registering workload components from url ", url, " using ", gm, " method...")
+		args = append(args, "-url="+os.Getenv("COMP_GEN_URL"))
+		args = append(args, "-method="+os.Getenv("COMP_GEN_METHOD"))
+
+		log.Info("Registering workload components from url ", os.Getenv("COMP_GEN_URL"), " using ", os.Getenv("COMP_GEN_METHOD"), " method...")
 	}
 
-	cmd := exec.Command("./build/main", force)
+	//generate the workloads. New workloads will be generated only if new version comes up
+	cmd := exec.Command(pathToCompGenBinary, args...)
 	out, err := cmd.Output()
 	if err != nil {
 		log.Info("Shit ", err.Error())
 		return
 	}
-	if !strings.Contains(string(out), "Skipping") {
-		fmt.Println("THIS ", string(out))
-		oam.WorkloadPath = filepath.Join(oam.WorkloadPath)
+	if strings.Contains(string(out), "writing") { //This is present in logs whenever a write is made, so we are sure to not skip
+		oam.WorkloadPath = filepath.Join(oam.WorkloadPath) //reset oam workload path to only register this new created version directory
 		registerCapabilities(port, log)
 		return
 	}
