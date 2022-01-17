@@ -42,6 +42,7 @@ jobs:
         cat log.txt
         end=$((SECONDS+100))
         while [ $SECONDS -lt $end ]; do
+            echo $(cat log.txt)
             if  [ "$(cat log.txt | grep "Component Creation completed for version")" != "" ];then
                 echo "New components created"
                 break
