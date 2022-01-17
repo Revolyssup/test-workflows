@@ -29,6 +29,7 @@ jobs:
           cd util
           npm i; npm i nexe -g
           make linux
+          pwd;ls
           cd $wd
     - name: Run adapter to create components
       run: |
