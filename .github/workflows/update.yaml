@@ -40,7 +40,7 @@ jobs:
         touch log.txt
         (FORCE_DYNAMIC_REG=true DEBUG=true go run main.go > log.txt 2>&1) &  
         cat log.txt
-        end=$((SECONDS+100))
+        end=$((SECONDS+500))
         while [ $SECONDS -lt $end ]; do
             echo $(cat log.txt)
             if  [ "$(cat log.txt | grep "Component Creation completed for version")" != "" ];then
