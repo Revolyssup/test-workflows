@@ -28,7 +28,7 @@ jobs:
         (FORCE_DYNAMIC_REG=true DEBUG=true go run main.go > log.txt 2>&1) &  #start the adapter
         end=$((SECONDS+100))
         while [ $SECONDS -lt $end ]; do
-            donelog-$(cat log.txt | grep "Component Creation completed for version")
+            donelog=$(cat log.txt | grep "Component Creation completed for version")
             if  [ donelog != "" ];then
                 echo "New components created"
             fi
