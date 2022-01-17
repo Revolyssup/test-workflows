@@ -42,11 +42,10 @@ jobs:
         cat log.txt
         end=$((SECONDS+100))
         # while [ $SECONDS -lt $end ]; do
-            donelog=$(cat log.txt | grep "Component Creation completed for version")
-            # if  [ "$donelog" != "" ];then
-            #     echo "New components created"
-            #     break
-            # fi
+            if  [ "$(cat log.txt | grep "Component Creation completed for version")" != "" ];then
+                echo "New components created"
+                break
+            fi
         # done
         rm log.txt
     - name: Commit changes
