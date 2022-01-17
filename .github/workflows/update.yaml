@@ -1,4 +1,4 @@
-name: Pattern Components Generator
+name: Meshery Istio Pattern Components Generator
 on:
   push:
     branches:
@@ -25,7 +25,15 @@ jobs:
         sed -E 's/.*"([^"]+)".*/\1/')
         curl -L https://github.com/layer5io/kubeopenapi-jsonschema/releases/download/$Version/kubeopenapi-jsonschema --output ./kubeopenapi-jsonschema
         cd $wd
-        cd build; make build-istioCompGenerator  ; ./istioCompGenerator -path=$wd/templates/oam/workloads  cd ..;
+        (FORCE_DYNAMIC_REG=true DEBUG=true go run main.go > log.txt 2>&1) &  #start the adapter
+        end=$((SECONDS+100))
+        while [ $SECONDS -lt $end ]; do
+            donelog-$(cat log.txt | grep "Component Creation completed for version")
+            if  [ donelog != "" ];then
+                echo "New components created"
+            fi
+        done
+        rm log.txt
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
