@@ -39,6 +39,7 @@ jobs:
         ls ~/.meshery/bin 
         touch log.txt
         (FORCE_DYNAMIC_REG=true DEBUG=true go run main.go > log.txt 2>&1) &  
+        cat log.txt
         end=$((SECONDS+100))
         while [ $SECONDS -lt $end ]; do
             donelog=$(cat log.txt | grep "Component Creation completed for version")
