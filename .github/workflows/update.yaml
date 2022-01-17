@@ -30,7 +30,8 @@ jobs:
           npm i; npm i nexe -g
           make linux
           cd ..
-          mv ./util/kubeopenapi-jsonschema ./kubeopenapi-jsonschema
+          mv ./util/kubeopenapi-jsonschema kubeopenapi-jsonschema
+          pwd;ls
           cd $wd
     - name: Run adapter to create components
       run: |
