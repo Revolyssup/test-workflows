@@ -38,15 +38,15 @@ jobs:
         echo $(pwd)
         ls ~/.meshery/bin 
         (FORCE_DYNAMIC_REG=true DEBUG=true go run main.go > log.txt 2>&1) &  #start the adapter
-        end=$((SECONDS+100))
-        while [ $SECONDS -lt $end ]; do
-            donelog=$(cat log.txt | grep "Component Creation completed for version")
-            if  [ donelog != "" ];then
-                echo "New components created"
-                break
-            fi
-        done
-        rm log.txt
+        # end=$((SECONDS+100))
+        # while [ $SECONDS -lt $end ]; do
+        #     donelog=$(cat log.txt | grep "Component Creation completed for version")
+        #     if  [ donelog != "" ];then
+        #         echo "New components created"
+        #         break
+        #     fi
+        # done
+        # rm log.txt
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
