@@ -4,7 +4,7 @@ vars:
   sidecarNS: {}
 services:
   servicemesh:
-    type: IstioSM
+    type: IstioMesh
     namespace:  $(#ref.vars.controlplaneNS)
     settings:
       version: 1
