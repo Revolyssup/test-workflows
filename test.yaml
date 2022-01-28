@@ -4,6 +4,4 @@ services:
     type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/pattern.yaml)
     namespace: default
     settings:
-      ns: default
-      version: v2
       image: utkarsh23/meshy:v5
