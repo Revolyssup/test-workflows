@@ -1,7 +1,7 @@
 name: User
 services:
   istiodeploy:
-    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/istio.yaml)
+    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/istio2.yaml)
     namespace: default
     settings:
       controlplaneNS: istio-system
