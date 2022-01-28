@@ -1,0 +1,7 @@
+name: User
+services:
+  cool:
+    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/pattern.yaml)
+    settings:
+      ns: default
+      version: v2

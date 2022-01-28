@@ -9,7 +9,7 @@ services:
     settings:
       advanced:
         labels:
-          version: $(#ref.vars.v1)
+          version: $(#ref.vars.version)
       containers:
       - image: docker.io/istio/examples-bookinfo-details-v1:1.16.2
         name: details
