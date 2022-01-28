@@ -4,7 +4,6 @@ vars:
   version: v1
   image: test
 services:
-   details:
     type: Application
     namespace: $(#ref.vars.ns)
     settings:
