@@ -1,7 +1,8 @@
 name: User
 services:
-  cool:
-    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/pattern3.yaml)
-    namespace: test
+  istiodeploy:
+    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/istio.yaml)
+    namespace: default
     settings:
-      image: utkarsh23/meshy:v5
+      controlplaneNS: istio-system
+      sidecarNS: default
