@@ -2,6 +2,7 @@ name: ApplicationPattern
 vars:
   ns: test
   version: v1
+  image: test
 services:
    details:
     type: Application
@@ -11,7 +12,7 @@ services:
         labels:
           version: $(#ref.vars.version)
       containers:
-      - image: docker.io/istio/examples-bookinfo-details-v1:1.16.2
+      - image: $(#ref.vars.image)
         name: details
         ports:
         - containerPort: 9080
