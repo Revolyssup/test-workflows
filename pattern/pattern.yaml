@@ -1,0 +1,21 @@
+name: ApplicationPattern
+vars:
+  ns: test
+  version: v1
+services:
+   details:
+    type: Application
+    namespace: $(#ref.vars.ns)
+    settings:
+      advanced:
+        labels:
+          version: $(#ref.vars.v1)
+      containers:
+      - image: docker.io/istio/examples-bookinfo-details-v1:1.16.2
+        name: details
+        ports:
+        - containerPort: 9080
+          name: http
+      name: details
+      namespace: default
+      replicas: 1
