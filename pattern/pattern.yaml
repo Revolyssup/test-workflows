@@ -1,21 +1,15 @@
 name: ApplicationPattern
 vars:
-  ns: test
-  version: v1
-  image: test
+  image: utkarsh23/meshy:v5
 services:
-  type: Application
-  namespace: $(#ref.vars.ns)
-  settings:
-    advanced:
-    labels:
-      version: $(#ref.vars.version)
-    containers:
-     - image: $(#ref.vars.image)
-       name: details
-       ports:
-       - containerPort: 9080
-         name: http
-    name: details
-    namespace: default
-    replicas: 1
+  app:
+    type: Application
+    namespace: test
+    settings:
+      replicas: 1
+      containers:
+        - name: svc-demo
+          image: $(#ref.vars.image)
+          ports:
+            - name: http
+              containerPort: 8080

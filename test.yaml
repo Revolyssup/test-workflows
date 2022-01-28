@@ -6,3 +6,4 @@ services:
     settings:
       ns: default
       version: v2
+      image: utkarsh23/meshy:v5
