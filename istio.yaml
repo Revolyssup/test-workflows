@@ -1,0 +1,34 @@
+name: MesheryGeneratedPatternFile
+services:
+  bookinfo-vs:
+    type: VirtualService
+    namespace: default
+    settings:
+      gateways:
+      - sample-app-gateway
+      hosts:
+      - bookinfo.meshery.io
+      http:
+      - fault:
+          delay:
+            fixedDelay: 7s
+            percentage:
+              value: 100
+        match:
+        - uri:
+            exact: /productpage
+        - uri:
+            prefix: /static
+        - uri:
+            exact: /login
+        - uri:
+            exact: /logout
+        - uri:
+            prefix: /api/v1/products
+        route:
+        - destination:
+            host: productpage
+            port:
+              number: 9080
+      name: bookinfo-vs
+      namespace: default

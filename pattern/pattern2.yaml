@@ -1,4 +1,4 @@
-name: ApplicationPattern
+name: user
 vars:
   image: utkarsh23/meshy:v5
 services:

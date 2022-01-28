@@ -1,7 +1,7 @@
 name: User
 services:
   cool:
-    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/pattern.yaml)
-    namespace: default
+    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/pattern2.yaml)
+    namespace: test
     settings:
       image: utkarsh23/meshy:v5
