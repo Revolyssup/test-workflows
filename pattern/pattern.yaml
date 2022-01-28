@@ -4,18 +4,18 @@ vars:
   version: v1
   image: test
 services:
-    type: Application
-    namespace: $(#ref.vars.ns)
-    settings:
-      advanced:
-        labels:
-          version: $(#ref.vars.version)
-      containers:
-      - image: $(#ref.vars.image)
-        name: details
-        ports:
-        - containerPort: 9080
-          name: http
-      name: details
-      namespace: default
-      replicas: 1
+  type: Application
+  namespace: $(#ref.vars.ns)
+  settings:
+    advanced:
+    labels:
+      version: $(#ref.vars.version)
+    containers:
+     - image: $(#ref.vars.image)
+       name: details
+       ports:
+       - containerPort: 9080
+         name: http
+    name: details
+    namespace: default
+    replicas: 1
