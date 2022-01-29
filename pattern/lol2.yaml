@@ -1,0 +1,8 @@
+name: istio
+services:
+  cool:
+    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/lol2.yaml)
+    settings: 
+        controlplaneNS: istio-system
+        sidecarNS: default
+        istioVersion: 1.11.0
