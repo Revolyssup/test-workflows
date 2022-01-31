@@ -7,6 +7,6 @@ services:
         linkerdVersion: stable-2.11.1
         sidecarNS: emojivoto
     emojivoto:
-      type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/emojivotoapp4.yaml)
+      type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/emojivotoapp5.yaml)
       dependsOn:
         - linkerdinstall

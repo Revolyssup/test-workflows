@@ -4,34 +4,6 @@ services:
     type: Namespace.K8s
     settings: 
       name: emojivoto
-  votebot:
-    type: Deployment.K8s
-    namespace: emojivoto
-    dependsOn:
-      - emojins
-    settings:
-      replicas: 1
-      selector:
-        matchLabels:
-          app: vote-bot
-          version: v11
-      template:
-        metadata:
-          labels:
-            app: vote-bot
-            version: v11
-      spec:
-        containers:
-          - command:
-            - emojivoto-vote-bot
-            env:
-            - name: WEB_HOST
-              value: web-svc.emojivoto:80
-            image: docker.l5d.io/buoyantio/emojivoto-web:v11
-            name: vote-bot
-            resources:
-              requests:
-                cpu: 10m
   web:
     type: Application
     namespace: emojivoto
