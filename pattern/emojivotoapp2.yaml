@@ -38,6 +38,7 @@ services:
     dependsOn:
       - emojins
     settings:
+      replicas: 1
       advanced:
         labels:
           app.kubernetes.io/name: web
