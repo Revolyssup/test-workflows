@@ -7,6 +7,8 @@ services:
   votebot:
     type: Deployment.K8s
     namespace: emojivoto
+    dependsOn:
+      - emojins
     settings:
       replicas: 1
       selector:
@@ -34,7 +36,7 @@ services:
     type: Application
     namespace: emojivoto
     dependsOn:
-      -emojins
+      - emojins
     settings:
       advanced:
         labels:
