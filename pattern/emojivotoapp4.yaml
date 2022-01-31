@@ -20,8 +20,8 @@ services:
           labels:
             app: vote-bot
             version: v11
-        spec:
-          containers:
+      spec:
+        containers:
           - command:
             - emojivoto-vote-bot
             env:
@@ -59,9 +59,6 @@ services:
         ports:
         - containerPort: 8080
           name: http
-        resources:
-          requests:
-            cpu: 100m
   voting:
     type: Application
     namespace: emojivoto
@@ -87,9 +84,6 @@ services:
           name: grpc
         - containerPort: 8801
           name: prom
-        resources:
-          requests:
-            cpu: 100m
   emojivoto:
     type: Application
     namespace: emojivoto
@@ -110,9 +104,6 @@ services:
           name: grpc
         - containerPort: 8801
           name: prom
-        resources:
-          requests:
-            cpu: 100m
       advanced:
         labels:
           app: emoji-svc
