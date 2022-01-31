@@ -13,14 +13,3 @@ services:
       automaticSidecarInjection:
         namespaces:
           - $(#ref.vars.sidecarNS)
-  grafana:
-    type: GrafanaIstioAddon
-    namespace: $(#ref.vars.controlplaneNS)
-    dependsOn:
-      - istioservicemesh
-      - prometheus
-  prometheus:
-    type: PrometheusIstioAddon
-    namespace: $(#ref.vars.controlplaneNS)
-    dependsOn:
-      - istioservicemesh
