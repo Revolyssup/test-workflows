@@ -10,6 +10,6 @@ services:
     settings:
       version: $(#ref.vars.linkerdVersion)
     traits:
-      automaticSidecarInjection:
+      automaticSidecarInjection.Linkerd:
         namespaces:
           - $(#ref.vars.sidecarNS)
