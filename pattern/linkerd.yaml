@@ -1,0 +1,15 @@
+name: Linkerd
+vars:
+  controlplaneNS: {}
+  linkerdVersion: {}
+  sidecarNS: {}
+services:
+  linkerd:
+    type: LinkerdMesh
+    namespace:  $(#ref.vars.controlplaneNS)
+    settings:
+      version: $(#ref.vars.linkerdVersion)
+    traits:
+      automaticSidecarInjection:
+        namespaces:
+          - $(#ref.vars.sidecarNS)

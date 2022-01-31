@@ -5,8 +5,8 @@ vars:
   namespace: default
   sidecarNS: default
 services:
-  bookinfo-vs8c57d047:
-    name: bookinfo-vs8c57d047
+  bookinfo-vs8c57d047c3497d0a:
+    name: bookinfo-vs8c57d047c3497d0a
     type: VirtualService.Istio
     namespace: $(#ref.vars.namespace)
     dependsOn:
@@ -77,12 +77,10 @@ services:
         position:
           posX: 414.45747658153505
           posY: 388.85606569789246
-  grafana32e685eb53cd2139:
-    name: grafana32e685eb53cd2139
+  grafana32e685eb182327e1:
+    name: grafana32e685eb182327e1
     type: GrafanaIstioAddon
     namespace: $(#ref.vars.controlplaneNS)
-    dependsOn:
-    - istioservicemesh07e8493a0acd978f
   istioservicemesh07e8493a0acd978f:
     name: istioservicemesh07e8493a0acd978f
     type: IstioMesh
@@ -128,10 +126,8 @@ services:
     name: prometheus954a7965
     type: PrometheusIstioAddon
     namespace: $(#ref.vars.controlplaneNS)
-    dependsOn:
-    - istioservicemesh07e8493a0acd978f
-  ratings8229a44f8da44e4c:
-    name: ratings8229a44f8da44e4c
+  ratings8229a44f:
+    name: ratings8229a44f
     type: Application
     namespace: $(#ref.vars.namespace)
     dependsOn:
@@ -223,6 +219,9 @@ services:
     namespace: $(#ref.vars.namespace)
     dependsOn:
     - istioservicemesh07e8493a0acd978f
+    - grafana32e685eb182327e1
+    - prometheus954a7965
+    - grafana32e685eb182327e1
     settings:
       advanced:
         create_service: false
@@ -278,8 +277,8 @@ services:
         position:
           posX: 400.9957488157415
           posY: 193.99797562654356
-  sample-app-gateway3845e1f61a29d973:
-    name: sample-app-gateway3845e1f61a29d973
+  sample-app-gateway3845e1f6:
+    name: sample-app-gateway3845e1f6
     type: Gateway.Istio
     namespace: $(#ref.vars.namespace)
     dependsOn:

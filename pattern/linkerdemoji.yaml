@@ -1,0 +1,12 @@
+name: Emojivotowithlinkerd
+services:
+    linkerdinstall:
+      type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/linkerd.yaml)
+      settings:
+        controlplaneNS: linkerd
+        linkerdVersion: stable-2.11.1
+        sidecarNS: emojivoto
+    emojivoto:
+      type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/emojivoto.yaml)
+      dependsOn:
+        - linkerdinstall
