@@ -3,12 +3,14 @@ vars:
   controlplaneNS: {}
   sidecarNS: {}
   istioVersion: {}
+  profile: {}
 services:
   istioservicemesh:
     type: IstioMesh
     namespace:  $(#ref.vars.controlplaneNS)
     settings:
       version: $(#ref.vars.istioVersion)
+      profile: $(#ref.vars.profile)
     traits:
       automaticSidecarInjection:
         namespaces:
