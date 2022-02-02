@@ -7,7 +7,13 @@ services:
         sidecarNS: default
         istioVersion: 1.12.0
         profile: minimal
-  app:
+  addons:
+    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/addons.yaml)
+    settings: 
+      controlplaneNS: istio-system
+    dependsOn:
+      - istioinstallation
+  bookinfoapp:
     type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/bookinfo.yaml)
     settings: 
       namespace: default
