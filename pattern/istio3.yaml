@@ -15,4 +15,8 @@ services:
       automaticSidecarInjection:
         namespaces:
           - $(#ref.vars.sidecarNS)
+  addons:
+    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/addons.yaml)
+    settings: 
+      controlplaneNS: $(#ref.vars.controlplaneNS)
 

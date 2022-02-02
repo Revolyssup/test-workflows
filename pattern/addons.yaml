@@ -1,0 +1,12 @@
+name: addons
+vars: 
+  controlplaneNS: {}
+services:
+  prom:
+    type: PrometheusIstioAddon
+    namespace: $(#ref.vars.controlplaneNS)
+  grafana:
+    type: GrafanaIstioAddon
+    namespace: $(#ref.vars.controlplaneNS)
+    dependsOn:
+      - prom
