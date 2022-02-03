@@ -1,18 +1,12 @@
 name: istio
 services:
   istioinstallation:
-    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/istio3.yaml)
+    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/istio4.yaml)
     settings: 
         controlplaneNS: istio-system
         sidecarNS: default
         istioVersion: 1.12.0
         profile: minimal
-  addons:
-    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/addons.yaml)
-    settings: 
-      controlplaneNS: istio-system
-    dependsOn:
-      - istioinstallation
   bookinfoapp:
     type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/bookinfo.yaml)
     settings: 
