@@ -1,14 +1,10 @@
 name: EmojiVoto
+vars:
+  namespace: {}
 services:
-  emojins:
-    type: Namespace.K8s
-    settings: 
-      name: emojivoto
   web:
     type: Application
-    namespace: emojivoto
-    dependsOn:
-      - emojins
+    namespace: $(#ref.vars.namespace)
     settings:
       replicas: 1
       advanced:
@@ -33,9 +29,7 @@ services:
           name: http
   voting:
     type: Application
-    namespace: emojivoto
-    dependsOn:
-      - emojins
+    namespace: $(#ref.vars.namespace)
     settings:
       advanced:
         labels:
@@ -58,9 +52,7 @@ services:
           name: prom
   emojivoto:
     type: Application
-    namespace: emojivoto
-    dependsOn:
-      - emojins
+    namespace: $(#ref.vars.namespace)
     settings:
       replicas: 1
       containers:

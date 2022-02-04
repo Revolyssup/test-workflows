@@ -1,7 +1,7 @@
 name: istio
 services:
   istioinstallation:
-    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/istio4.yaml)
+    type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/istio5.yaml)
     settings: 
         controlplaneNS: istio-system
         sidecarNS: default

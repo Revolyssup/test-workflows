@@ -8,5 +8,7 @@ services:
         sidecarNS: emojivoto
     emojivoto:
       type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/emojivotoapp5.yaml)
+      settings:
+        namespace: emojivoto
       dependsOn:
         - linkerdinstall
