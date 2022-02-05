@@ -14,7 +14,7 @@ services:
     traits:
       automaticSidecarInjection:
         namespaces:
-          - $(#ref.vars.sidecarNS)
+          - $(#ref.vars.namespace)
   # addons:
   #   type: $(#use https://raw.githubusercontent.com/Revolyssup/test-workflows/main/pattern/addons.yaml)
   #   settings: 
