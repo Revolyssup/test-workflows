@@ -3,7 +3,12 @@ name: release binaries
 on:
   release:
     types: [published]
-
+  pull_request:
+    branches:
+      - "*"
+  push:
+    branches:
+      - "*"
 
 env:
   CARGO_TERM_COLOR: always
@@ -18,7 +23,8 @@ jobs:
 
     - name: Build binaries
       run: sh release-binaries.sh
-
+    
+    # the below step will take place only when there is a release
     - name: Set binary names to be uploaded
       if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
       run: |
