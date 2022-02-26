@@ -1,4 +1,4 @@
-name: release binaries 
+name: Build/Release binaries
 
 on:
   release:
@@ -25,7 +25,7 @@ jobs:
       run: sh release-binaries.sh
     
     # the below step will take place only when there is a release
-    - name: Set binary names to be uploaded
+    - name: Upload wasm binaries to the latest made release
       if: github.event_name == 'release'
       run: |
         set -x
