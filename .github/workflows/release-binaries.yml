@@ -28,12 +28,16 @@ jobs:
     - name: Upload wasm binaries to the latest made release
       if: github.event_name == 'release'
       run: |
+        tag_name="${GITHUB_REF##*/}"
+        if [[ $tag_name != stable* ]];then
+            echo "Skipping pushing artifacts. Releases are only pushed for releases with tag stable-* "
+            return 0
+        fi        
         set -x
         assets=()
         for asset in ./wasm-filters/*.wasm; do
           assets+=("-a" "$asset")
         done
-        tag_name="${GITHUB_REF##*/}"
         hub release edit "${assets[@]}" -m "" "$tag_name"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
