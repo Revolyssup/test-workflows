@@ -38,7 +38,7 @@ jobs:
 
   send-email-on-build-failure:
       needs: [release]
-      if: needs.release.result == 'failure' 
+      if: ${{ failure() }}
       runs-on: ubuntu-latest
       steps:
         - name: Send email
