@@ -1,0 +1,78 @@
+name: Build/Release binaries
+
+on:
+  release:
+    types: [published]
+  pull_request:
+    branches:
+      - "*"
+  push:
+    branches:
+      - "*"
+jobs:
+  release:
+    name: build artifact
+    runs-on: "ubuntu-latest"
+    steps:
+    - name: check out code
+      uses: actions/checkout@master
+    - name: Fail 
+      run: exit 1
+
+
+#   notify:
+#     name: notify packages
+#     needs: [release]
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: trigger packages repository
+#       if: ${{ github.event.inputs.version != 'master' }}
+#       run: | 
+#         workflow_id=$(curl -H "Authorization: token ${{ secrets.RELEASEDRAFTER_PAT }}" "https://api.github.com/repos/layer5labs/meshery-extensions-packages/actions/workflows" | jq -r .workflows | jq -r '.[] | select( .name == "Publish Assets")' | jq -r .id)
+#         curl -X POST -H "Authorization: token ${{ secrets.RELEASEDRAFTER_PAT }}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/layer5labs/meshery-extensions-packages/actions/workflows/$workflow_id/dispatches -d '{"ref":"master","inputs": {"version":"${{ github.event.inputs.version }}-${{ github.event.inputs.revision }}"}}'
+#     - name: trigger packages repository
+#       if: ${{ github.event.inputs.version == 'master' }}
+#       run: | 
+#         workflow_id=$(curl -H "Authorization: token ${{ secrets.RELEASEDRAFTER_PAT }}" "https://api.github.com/repos/layer5labs/meshery-extensions-packages/actions/workflows" | jq -r .workflows | jq -r '.[] | select( .name == "Publish Assets")' | jq -r .id)
+#         curl -X POST -H "Authorization: token ${{ secrets.RELEASEDRAFTER_PAT }}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/layer5labs/meshery-extensions-packages/actions/workflows/$workflow_id/dispatches -d '{"ref":"master","inputs": {"version":"edge-latest"}}'
+
+  send-email-on-build-failure:
+      needs: [release]
+      if: needs.release.result == 'failure' 
+      runs-on: ubuntu-latest
+      steps:
+        - name: Send email
+          uses: dawidd6/action-send-mail@v3
+          with:
+            # Required mail server address:
+            server_address: smtp.gmail.com
+            # Required mail server port:
+            server_port: 465
+            # Optional (recommended): mail server username:
+            username: ${{secrets.MAIL_USERNAME}}
+            # Optional (recommended) mail server password:
+            password: ${{secrets.MAIL_PASSWORD}}
+            # Required mail subject:
+            subject: MeshMap Release Failed
+            # Required recipients' addresses:
+            to: ashish.tiwari@layer5.io
+            # Required sender full name (address can be skipped):
+            from: "Meshery Extensions" # <user@example.com>
+            # Optional whether this connection use TLS (default is true if server_port is 465)
+            secure: true
+            # Optional plain body:
+            body: MeshMap Release Failed for version 
+            # Optional carbon copy recipients:
+            # cc: leecalcote@icloud.com
+            # Optional blind carbon copy  recipients:
+            # bcc: r2d2@example.com,hansolo@example.com
+            # Optional recipient of the email response:
+            reply_to: no-reply@layer5.io
+            # Optional unsigned/invalid certificates allowance:
+            ignore_cert: true
+            # Optional converting Markdown to HTML (set content_type to text/html too):
+            convert_markdown: false
+            # Optional attachments:
+            # attachments: attachments.zip,git.diff,./dist/static/*.js
+            # Optional priority: 'high', 'normal' (default) or 'low'
+            priority: high
