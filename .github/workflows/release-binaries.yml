@@ -74,13 +74,9 @@ jobs:
             echo "✔️ All copied files match source" >> $TEMP_FILE
           fi
 
-          # Escape special characters and output the results
-          ESCAPED_RESULTS=$(cat $TEMP_FILE | jq -Rs .)
-          echo "results=$ESCAPED_RESULTS" >> $GITHUB_OUTPUT
-
-      - name: Install jq (for JSON escaping)
-        if: always()
-        run: sudo apt-get install -y jq
+          # Base64 encode the results to avoid JS string issues
+          BASE64_RESULTS=$(base64 -w 0 $TEMP_FILE)
+          echo "results=$BASE64_RESULTS" >> $GITHUB_OUTPUT
 
       - name: Comment on PR
         if: always()
@@ -99,8 +95,8 @@ jobs:
               comment.body.includes('## Verification Results')
             );
             
-            // Get and parse the escaped results
-            const results = JSON.parse(`${{ steps.verify-files.outputs.results }}`);
+            // Decode the base64 results
+            const results = Buffer.from(`${{ steps.verify-files.outputs.results }}`, 'base64').toString('utf-8');
             
             if (botComment) {
               await github.rest.issues.updateComment({
