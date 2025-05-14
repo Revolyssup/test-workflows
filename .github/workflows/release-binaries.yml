@@ -1,45 +1,104 @@
-name: Build/Release binaries
-
+name: Verify Backported Files
 on:
-  release:
-    types: [published]
   pull_request:
-    branches:
-      - "*"
-  push:
-    branches:
-      - "*"
-
-env:
-  CARGO_TERM_COLOR: always
+    paths:
+      - '**'  # Runs on all file changes in PR
 
 jobs:
-  build:
+  verify-backported-files:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Toolchain installation
-      run: sh -c "rustup toolchain install nightly && rustup target add wasm32-unknown-unknown && cargo install wasm-pack"
+      - name: Checkout enterprise repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
 
-    - name: Build binaries
-      run: sh release-binaries.sh
-    
-    # the below step will take place only when there is a release
-    - name: Upload wasm binaries to the latest made release
-      if: github.event_name == 'release'
-      run: |
-        tag_name="${GITHUB_REF##*/}"
-        if [[ $tag_name != stable* ]];then
-            echo "Skipping pushing artifacts. Releases are only pushed for releases with tag stable-* "
-            return 0
-        fi        
-        set -x
-        assets=()
-        for asset in ./wasm-filters/*.wasm; do
-          assets+=("-a" "$asset")
-        done
-        hub release edit "${assets[@]}" -m "" "$tag_name"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout apache/apisix repo
+        uses: actions/checkout@v4
+        with:
+          repository: apache/apisix
+          ref: release/3.2
+          path: apisix-source
 
-    
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v42
+        with:
+          since_last_remote_commit: 'true'
+
+      - name: Verify files against source
+        id: verify-files
+        run: |
+          # Create a temporary file for the verification results
+          TEMP_FILE=$(mktemp)
+          echo "## Verification Results" > $TEMP_FILE
+          echo "" >> $TEMP_FILE
+
+          ALL_FILES_VALID=true
+
+          # Loop through all added/modified files
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            # Check if file exists in source repo
+            if [ -f "apisix-source/$file" ]; then
+              # Compare files
+              if ! diff -u "apisix-source/$file" "$file" >> $TEMP_FILE; then
+                echo "" >> $TEMP_FILE
+                echo "❌ Differences found in $file" >> $TEMP_FILE
+                echo "" >> $TEMP_FILE
+                ALL_FILES_VALID=false
+              else
+                echo "✅ $file matches source" >> $TEMP_FILE
+                echo "" >> $TEMP_FILE
+              fi
+            else
+              echo "⚠️ $file not found in source repository" >> $TEMP_FILE
+              echo "" >> $TEMP_FILE
+            fi
+          done
+
+          # Add summary
+          if [ "$ALL_FILES_VALID" = true ]; then
+            echo "Copied files verified" >> $TEMP_FILE
+          fi
+
+          # Output the results
+          echo "results<<EOF" >> $GITHUB_OUTPUT
+          cat $TEMP_FILE >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Set output for next step
+          echo "all_valid=$ALL_FILES_VALID" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            // Check if bot has already commented
+            const botComment = comments.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes('## Verification Results')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: `${{ steps.verify-files.outputs.results }}`
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `${{ steps.verify-files.outputs.results }}`
+              });
+            }
