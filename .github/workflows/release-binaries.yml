@@ -1,18 +1,20 @@
 name: Verify Backported Files
 on:
   pull_request:
+    types: [labeled, synchronize, opened]
     paths:
-      - '**'  # Runs on all file changes in PR
+      - '**'
 
 jobs:
   verify-backported-files:
+    if: contains(github.event.pull_request.labels.*.name, 'check-backport')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout enterprise repo
+      - name: Checkout enterprise repo (PR HEAD)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0  # Get full history for proper diffing
 
       - name: Checkout apache/apisix repo
         uses: actions/checkout@v4
@@ -25,7 +27,8 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v42
         with:
-          since_last_remote_commit: 'true'
+          base_sha: ${{ github.event.pull_request.base.sha }}
+          sha: ${{ github.event.pull_request.head.sha }}
 
       - name: Verify files against source
         id: verify-files
@@ -36,11 +39,13 @@ jobs:
           echo "" >> $TEMP_FILE
 
           ALL_FILES_VALID=true
+          ANY_FILE_CHECKED=false
 
           # Loop through all added/modified files
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             # Check if file exists in source repo
             if [ -f "apisix-source/$file" ]; then
+              ANY_FILE_CHECKED=true
               # Compare files
               if ! diff -u "apisix-source/$file" "$file" >> $TEMP_FILE; then
                 echo "" >> $TEMP_FILE
@@ -57,9 +62,11 @@ jobs:
             fi
           done
 
-          # Add summary
-          if [ "$ALL_FILES_VALID" = true ]; then
-            echo "Copied files verified" >> $TEMP_FILE
+          if [ "$ANY_FILE_CHECKED" = false ]; then
+            echo "No files to verify against source repository" >> $TEMP_FILE
+            ALL_FILES_VALID=false
+          elif [ "$ALL_FILES_VALID" = true ]; then
+            echo "✔️ All copied files match source" >> $TEMP_FILE
           fi
 
           # Output the results
@@ -67,10 +74,8 @@ jobs:
           cat $TEMP_FILE >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-          # Set output for next step
-          echo "all_valid=$ALL_FILES_VALID" >> $GITHUB_OUTPUT
-
       - name: Comment on PR
+        if: always()
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -81,24 +86,25 @@ jobs:
               issue_number: context.issue.number,
             });
             
-            // Check if bot has already commented
             const botComment = comments.find(comment => 
               comment.user.login === 'github-actions[bot]' && 
               comment.body.includes('## Verification Results')
             );
+            
+            const results = `${{ steps.verify-files.outputs.results }}`;
             
             if (botComment) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: botComment.id,
-                body: `${{ steps.verify-files.outputs.results }}`
+                body: results
               });
             } else {
               await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: `${{ steps.verify-files.outputs.results }}`
+                body: results
               });
             }
