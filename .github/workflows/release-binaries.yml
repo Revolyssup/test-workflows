@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0  # Get full history for proper diffing
+          fetch-depth: 0
 
       - name: Checkout apache/apisix repo
         uses: actions/checkout@v4
@@ -46,10 +46,15 @@ jobs:
             # Check if file exists in source repo
             if [ -f "apisix-source/$file" ]; then
               ANY_FILE_CHECKED=true
-              # Compare files
-              if ! diff -u "apisix-source/$file" "$file" >> $TEMP_FILE; then
+              # Compare files and capture diff output
+              DIFF_OUTPUT=$(diff -u "apisix-source/$file" "$file" 2>&1 || true)
+              
+              if [ -n "$DIFF_OUTPUT" ]; then
                 echo "" >> $TEMP_FILE
                 echo "❌ Differences found in $file" >> $TEMP_FILE
+                echo '```diff' >> $TEMP_FILE
+                echo "$DIFF_OUTPUT" >> $TEMP_FILE
+                echo '```' >> $TEMP_FILE
                 echo "" >> $TEMP_FILE
                 ALL_FILES_VALID=false
               else
@@ -69,10 +74,13 @@ jobs:
             echo "✔️ All copied files match source" >> $TEMP_FILE
           fi
 
-          # Output the results
-          echo "results<<EOF" >> $GITHUB_OUTPUT
-          cat $TEMP_FILE >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # Escape special characters and output the results
+          ESCAPED_RESULTS=$(cat $TEMP_FILE | jq -Rs .)
+          echo "results=$ESCAPED_RESULTS" >> $GITHUB_OUTPUT
+
+      - name: Install jq (for JSON escaping)
+        if: always()
+        run: sudo apt-get install -y jq
 
       - name: Comment on PR
         if: always()
@@ -91,7 +99,8 @@ jobs:
               comment.body.includes('## Verification Results')
             );
             
-            const results = `${{ steps.verify-files.outputs.results }}`;
+            // Get and parse the escaped results
+            const results = JSON.parse(`${{ steps.verify-files.outputs.results }}`);
             
             if (botComment) {
               await github.rest.issues.updateComment({
